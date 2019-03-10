@@ -11,7 +11,7 @@ The program generates 4 text files, the number present in the file name indicate
 This files are only temporary because will be used to perform encryption and decryption
 tests during the development of the program.
 
-When the program will be finished, only the file with a 4 character long key will be attached to it.
+When the program will be finished, only the file with 4 characters will be attached to it, 
 and the name will be update to "chiave.txt"
 
 
