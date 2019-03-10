@@ -5,7 +5,7 @@ public class MainTest {
 	public static void main(String[] args) {
 		
 		String[] fileNames = {"chiave2.txt", "chiave4.txt","chiave8.txt","chiave16.txt"};
-		String[] key;
+		String key;
 		String dictionary = "ABCDE";
 		
 		key = KeyGenerator.Generator(2, dictionary);
