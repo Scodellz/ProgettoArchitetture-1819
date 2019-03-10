@@ -5,16 +5,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class WriteOnFile {
-	
-	public static void writeKey(String[] keys,String fileName){
+
+	public static void writeKey(String keys, String fileName) {
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		try {
 			fw = new FileWriter(fileName);
 			bw = new BufferedWriter(fw);
-			for (int i = 0; i < keys.length; i++) {
-				  bw.write(keys[i]);	
+			for(int i=0; i<keys.length(); i++) {
+			bw.write(keys.charAt(i));
 			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -30,6 +31,6 @@ public class WriteOnFile {
 			}
 		}
 
-}
+	}
 
 }
