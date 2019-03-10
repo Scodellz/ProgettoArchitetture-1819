@@ -8,16 +8,16 @@ public class MainTest {
 		String[] key;
 		String dictionary = "ABCDE";
 		
-		key = KeyGenerartor.Generartor(2, dictionary);
+		key = KeyGenerator.Generator(2, dictionary);
 		WriteOnFile.writeKey(key, fileNames[0]);
 		
-		key = KeyGenerartor.Generartor(4, dictionary);
+		key = KeyGenerator.Generator(4, dictionary);
 		WriteOnFile.writeKey(key, fileNames[1]);
 		
-		key = KeyGenerartor.Generartor(8, dictionary);
+		key = KeyGenerator.Generator(8, dictionary);
 		WriteOnFile.writeKey(key, fileNames[2]);
 		
-		key = KeyGenerartor.Generartor(16, dictionary);
+		key = KeyGenerator.Generator(16, dictionary);
 		WriteOnFile.writeKey(key, fileNames[3]);
 		
 	}
