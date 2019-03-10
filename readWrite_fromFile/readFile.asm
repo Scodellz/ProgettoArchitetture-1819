@@ -1,6 +1,6 @@
-# Esempio di lettura da file. 
-# Il file "messaggio.txt" deve trovarsi nella stessa cartella 
-# in cui si trova l'eseguibile QtSpim
+# the sample file must be in the same directory 
+# of the MARS (qtSpim ) file  
+# 
 .data
 fnf:	.ascii  "The file was not found: "
 file:	.asciiz	".marSETUP/messaggio.txt"	
@@ -8,10 +8,10 @@ cont:	.ascii  "File contents: "
 buffer: .space 1024
  
 .text
-.globl main
+
 main:
  
-# Open File
+				# Open File
 open:
 	li	$v0, 13		# Open File Syscall
 	la	$a0, file	# Load File Name
@@ -21,7 +21,7 @@ open:
 	move	$t6, $v0	# Save File Descriptor
 	blt	$v0, 0, err	# Goto Error
  
-# Read Data
+				# Read Data
 read:
 	li	$v0, 14		# Read File Syscall
 	move	$a0, $t6	# Load File Descriptor
@@ -29,24 +29,27 @@ read:
 	li	$a2, 1024	# Buffer Size 
 	syscall
  
-# Print Data
+				# Print Data
 print:
 	li	$v0, 4		# Print String Syscall
 	la	$a0, cont	# Load Contents String
 	syscall
  
-# Close File
+				# Close File
 close:
 	li	$v0, 16		# Close File Syscall
 	move	$a0, $t6	# Load File Descriptor
 	syscall
 	j	done		# Goto End
  
-# Error
+				# Error
 err:
 	li	$v0, 4		# Print String Syscall
 	la	$a0, fnf	# Load Error String
 	syscall
  
-# Done
-done:   jr $ra
+				# Done
+done:   li 	$v0, 10
+	syscall
+	
+	
