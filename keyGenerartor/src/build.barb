@@ -1,0 +1,5 @@
+javac base/MainTest.java &&
+
+jar -cvfm KeyGenerator.jar META-INF/MANIFEST.MF base/*.class &&
+
+rm base/*.class
