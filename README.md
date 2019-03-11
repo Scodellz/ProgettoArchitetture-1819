@@ -17,9 +17,12 @@ The name will be update to "chiave.txt".
 
 # how to get the key files :
 linux :
-        0. download the KeyGenerartor.jar
-        1. open the terminal                                     (in the current directory!)
-        2. write the follow command: java -jar KeyGenerartor.jar (you can use tab for autocomplete)
+
+        0.download the KeyGenerartor.jar
+        
+        1.open the terminal                                     (in the current directory!)
+        
+        2.write the follow command: java -jar KeyGenerartor.jar (you can use tab for autocomplete)
         
 
 ___
