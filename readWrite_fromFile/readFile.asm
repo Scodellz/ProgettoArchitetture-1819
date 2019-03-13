@@ -5,7 +5,7 @@
 fnf:	.ascii  "The file was not found: "
 file:	.asciiz	".marSETUP/messaggio.txt"	
 cont:	.ascii  "File contents: "
-buffer: .space 1024
+buffer: .space  1024
  
 .text
 
