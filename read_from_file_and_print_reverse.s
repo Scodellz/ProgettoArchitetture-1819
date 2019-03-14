@@ -1,7 +1,6 @@
 .data
 	fnf:		.ascii  		"Il file non e' stato trovato: "
 	input:		.asciiz		"C:/Users/duxom/Desktop/Mars/input.txt"
-	#output:		.asciiz  	"C:/Users/duxom/Desktop/Mars/output.txt"
 	buffer: 	.space 		4	# <- 10024
 
 
@@ -32,12 +31,12 @@ counter:
 	lbu	$t1, ($a3)		# Carico il carattere puntato in $t1
 	beqz	$t1, endPointer		# Se sono arrivato alla fine della stringa posso passare alla stampa
 	addi	$t0, $t0, 1		# Altrimenti aumento il contatore di 1
-	addi	$a3, $a3, 1
+	addi	$a3, $a3, 1		# Aumento indice di 1
 	
 	j 	counter
 
 endPointer:
-	la	$a3, buffer
+	la	$a3, buffer		# Riimposto il puntatore all'inizio del buffer
 	subi	$t0, $t0, 1		# Dato che ho contato un carattere in più, diminuisco il contatore
 	add	$a3, $a3, $t0		# Metto il puntatore all'ultimo carattere della frase
 
