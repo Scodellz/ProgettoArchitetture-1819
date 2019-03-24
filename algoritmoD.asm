@@ -26,7 +26,7 @@ read:
 	
 	move	$a2, $a1				# Metto descrittore file in $a2
 	move	$t0, $zero			# Inizializzo contatore degli elementi della stringa a 0
-	la	$a3, outputMessage		# Carico il buffer che conterr‡ il messaggio da restituire in $a3
+	la	$a3, outputMessage		# Carico il buffer che conterr√† il messaggio da restituire in $a3
 	
 counter:						# Metodo che conta quanti elementi sono presenti nel buffer
 	lbu	$t1, ($a2)			# Carico il carattere puntato in $t1
@@ -39,11 +39,11 @@ counter:						# Metodo che conta quanti elementi sono presenti nel buffer
 endPointer:
 	addi	$a2, $a2, -1			# Dato che il il puntatore e' fuori dal buffer, lo faccio tornare
 						# indietro di una posizione
-	move	$s0, $t0				# Dato che e' il numero degli elementi rimarra' invariato lo salvo in $s0
+	move	$s0, $t0				# Dato che il numero degli elementi rimarra' invariato lo salvo in $s0
 	move	$t0, $zero			# Reinizializzo $t0 per contare il numero di elementi che verranno inseriti
 
 reversal:					# Metodo di inversione				
-	beq	$t0, $s0, print			# Se il numero dei caratteri inseriti Ë pari alla lunghezza del buffer
+	beq	$t0, $s0, print			# Se il numero dei caratteri inseriti √® pari alla lunghezza del buffer
 						# allora posso stampare su file il buffer di output	
 	lbu	$t1, ($a2)			# Altrimenti metto in $t1 l'elemento del buffer di input
 	sb	$t1, ($a3)			# e lo salvo nel buffer di uscita
