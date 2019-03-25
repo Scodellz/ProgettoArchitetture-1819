@@ -1,89 +1,98 @@
-######### ALGORITMO A ##########################
+.data
+	buffer: 	.asciiz	"dioCane"
 
-	subi	$s0, $t0, 1	# togliere uno NON SAPPIAMO PERCHE riceve qui la lunghezza $s0
-	
-start:	move	$t0, $zero	# init counter		 
-	la	$a3, buffer	# salvo il puntatore al buffer 
+.align 2
+.text
 
-convert:lb	$t7, ($a3) 	# IN $T7 CE LA METTERA DA CAMBIARE
-	li	$t3, 255	# load the module value
-	li	$t2, 4		# load constant offset			
-	li	$t4, 0		# flag 
+main:
+#	li	$a1, 0
+#	jal	A
+#	li	$a1, 1
+#	jal	A
 	
-decrip:	beq	$t4, $zero, crip 
-	li 	$t5, -1		  # decifro 	
-	mult	$t2, $t5
-	mflo	$t2
+	li	$a1, 0
+	jal	B
+	li	$a1, 1
+	jal	B
 	
-crip:	add	$t7, $t7, $t2     # "cifro il carrattere"				
-	div	$t7, $t3
-	mfhi	$t7  		 		
-	sb	$t7, 0($a3) # salvo il nuovo contenuto da stampare
-	
-	beq 	$t0, $s0, exit	# controllo di uscita
-	add	$t0, $t0, 1	# update counter
-	add	$a3, $a3, 1	# update char counter	
-	j 	convert
-	
-################# fine A ############################## 
+	li	$a1, 0
+	jal	C
+	li	$a1, 1
+	jal	C
 
-############# alg B #########################à
-	subi	$s0, $t0, 1	# togliere uno NON SAPPIAMO PERCHE riceve qui la lunghezza $s0
 	
-start:	move	$t0, $zero	# init counter		 
-	la	$a3, buffer	# salvo il puntatore al buffer 
+	li 	$v0,10
+	syscall	
 
-convert:lb	$t7, ($a3) 	# IN $T7 CE LA METTERA DA CAMBIARE
-	li	$t3, 255	# load the module value
-	li	$t2, 4		# load constant offset			
-	li	$t4, 0		# --------------------------------------->flag ----- gestito dall'esterno !
-	
-decrip:	beq	$t4, $zero, crip 
-	li 	$t5, -1		  # decifro 	
-	mult	$t2, $t5
-	mflo	$t2
-	
-crip:	add	$t7, $t7, $t2     # "cifro il carrattere"				
-	div	$t7, $t3
-	mfhi	$t7  		 		
-	sb	$t7, 0($a3) # salvo il nuovo contenuto da stampare
-	
-	beq 	$t0, $s0, exit	# controllo di uscita
-	add	$t0, $t0, 1	# update counter
-	add	$a3, $a3, 2	# update char counter	
-	j 	convert
-	
-#########################################################
 
-############# alg  #########################à
-	# procedura di lunghezza forze non serve
-	
-start:		 
+# PROCEDURA DEDICATA AL SETTAGGIO DEL CONPORTAMENTO PER L'ALGORITMO A
+# PARAMETRI : $S1 , si aspetta 0 per criptare oppure 1 per decriptare 
+#
+A:
+	li	$s0, 0
+	move	$s1, $a1
+	li	$s2, 1	
+	j	shifter
+
+# PROCEDURA DEDICATA AL SETTAGGIO DEL CONPORTAMENTO PER L'ALGORITMO B
+# PARAMETRI : $S1 , si aspetta 0 per criptare oppure 1 per decriptare 
+#
+B:
+	li	$s0, 0
+	move	$s1, $a1
+	li	$s2, 2	
+	j	shifter
+
+# PROCEDURA DEDICATA AL SETTAGGIO DEL CONPORTAMENTO PER L'ALGORITMO C
+# PARAMETRI : $S1 , si aspetta 0 per criptare oppure 1 per decriptare 
+#
+C:
+	li	$s0, 1
+	move	$s1, $a1
+	li	$s2, 2	
+	j	shifter
+
+
+# PROCEDURA GENERICA CHE SVOLGERA IL CIFRATURA E LA DECIFRATURA DEGLI ALGORITMI A - B - C 
+# : il suo confortamento sarà definito dal settaggio di alcuni flag, da procedure dedicate 
+#  parametri :
+#	$s0 <--  offset di inizio di scorrimento del buffer
+#	$s1 <--  flag distinzione tra operazione di CRIFRATURA e DECIFRATURA
+#	$s2 <--	 offset dedicato al passo di scorrimento del buffer
+# viene utilizzato il solito buffer
+
+shifter:	
+		 
 	la	$a3, buffer	# salvo il puntatore al buffer
-	addi	$a3, $a3, 1 	# al posto di 1 deve essere un reg settato dall' esterno sara 0 se faccio A e B e
-				# 1 se faccio C				
-				
-convert:lb	$t7, ($a3) 	# IN $T7 CE LA METTERA DA CAMBIARE
-	beqz    $t7, exit
-	li	$t3, 255	# load the module value
-	li	$t2, 4		# load constant offset			
-	li	$t4, 0		# flag 				-----------------0 - cirpta 1 decripta ---------------->flag ----- gestito dall'esterno !
+	add	$a3, $a3, $s0 	# definiamo l'indice di partenza	
+								
+convert:lb	$t0, ($a3) 	# $t0 carichiamo la lettera da cifrare
+	beqz    $t0, exit	# controlliamo di non essere arrivati alla fine 
+	li	$t1, 255	# definiamo il valore del modulo 
+	li	$t2, 4		# costante di cifratura		
+	move	$t3, $s1	# flag di operazione
 	
-decrip:	beq	$t4, $zero, crip 
-	li 	$t5, -1		  # decifro 	
-	mult	$t2, $t5
-	mflo	$t2
+decrip:	beq	$t3, $zero, crip# operazione di decifratura 	 
+	li 	$t4, -1		# AGGIUNGERE CONTROLLO SUI NEGATIVI   
+	mult	$t2, $t4	#
+	mflo	$t2		
 	
-crip:	add	$t7, $t7, $t2     # "cifro il carrattere"				
-	div	$t7, $t3
-	mfhi	$t7  		 		
-	sb	$t7, 0($a3) # salvo il nuovo contenuto da stampare sullo stesso buffer !!!
+crip:	add	$t0, $t0, $t2	# operazione di cifratura			
+	div	$t0, $t1
+	mfhi	$t0  		 		
+	sb	$t0, 0($a3)	# salvo il nuovo contenuto da stampare sullo stesso buffer !!!
 	
-				# se questo diventa una registro $t1 allora quando facciamo A dobbiamo assegnare $t1 = 1 , altrimenti $t1 =2 
-	add	$a3, $a3, 2	# update char counter	--------------------------------------->flag ----- gestito dall'esterno !
+				#  
+	add	$a3, $a3,$s2	# 
 	j 	convert
-	
-#########################################################	
+		
+exit:	li	$v0, 4
+	la	$a0, buffer
+	syscall
+
+	jr	$ra	
+
+
 		
 			
 					
