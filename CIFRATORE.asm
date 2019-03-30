@@ -39,7 +39,7 @@ main:
 
 					
 	jal 	menuIniziale		# presentazione del menù iniziale
-	jal	initMenùJat		# chiama la procedura che inizializza la tabella dei salti per il menù
+	jal	initmenuJAT		# chiama la procedura che inizializza la tabella dei salti per il menù
 	
 	li	$v0, 5			# lettura della scelta effetuata 
 		syscall			# il numero letto si troverà in $v0
@@ -82,7 +82,7 @@ decrip:		li	$v0, 4				# eseguiamo le procedure di decriptaggio
 uscita:		j 	exit				# salta alla sezione di uscita
 	
 # ***** PROCEDURA CHE INIZIALIZZA GLI INDIRIZZI DI SALTO DEDICATI AL MENU PRINCIPALE  
-initMenùJat:	la	$t4, menuJAT			
+initmenuJAT:	la	$t4, menuJAT			
 		la	$t5, uscita
 		sw	$t5, 0($t4)		# carico il caso dell'uscita nella posizione zero			
 		la	$t5, cript
