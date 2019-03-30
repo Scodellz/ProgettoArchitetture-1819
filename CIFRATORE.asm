@@ -7,8 +7,9 @@
 #
 
 .data 
+
 # STRINGHE DEDICATE ALLA VISUALIZZAZIONE DEL MENU' PRINCIPALE
-	welcome: 	.asciiz 	" Benvenuto! scelgliere una delle tre opzioni:\n"
+	welcome: 	.asciiz 	" Benvenuto! scelgli una delle tre opzioni:\n"
 	firstChoice:	.asciiz		" Premi 1 - per criptare il messaggio.\n "
 	secondChoice:	.asciiz		"premi 2 - per decriptare il messaggio.\n "
 	thirdChoice:	.asciiz		"premi 0 - per terminare il programma.\n "
