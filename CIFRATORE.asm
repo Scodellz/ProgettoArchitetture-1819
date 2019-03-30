@@ -32,14 +32,22 @@ main:
 	sw 	$s1, 8($sp)
 	sw 	$s2, 12($sp) 
 
-#*****PRESENTAZIONE DEL MENU PRINCIPALE PER LA SCELTA DELLE AZIONI 
-
+# ***** PRESENTAZIONE DEL MENU PRINCIPALE PER LA SCELTA DELLE AZIONI ***** #
 	jal 	menuIniziale
+	# INIZIALIZZA JAT 
+	# LEGGI SCELTA
+	
+	# COME PASSARE LA COSTANTE PER IL CALCOLO DEGLI INDIRIZZI?
+	# JAL CALCOLO SCELTA  
+	
 	
 	j 	esci
 
 
-menuIniziale:	li	$v0, 4				# Stampa il menu di scelta di benvenuto  
+
+
+# ***** PROCEDURA CHE STAMPA IL MENU' DI SCELTA PRINCIPALE ***** #
+menuIniziale:	li	$v0, 4				
 		la	$a0, welcome			 
 		syscall					 			
 		la	$a0, firstChoice		
@@ -54,7 +62,6 @@ menuIniziale:	li	$v0, 4				# Stampa il menu di scelta di benvenuto
 # fine del programma
 esci:		
 
-
 	lw 	$ra, 0($sp)
 	lw 	$s0, 4($sp)
 	lw 	$s1, 8($sp)
@@ -65,42 +72,4 @@ esci:
 	syscall
 		
 	# jr $ra 	# forse si toglie, forse no, da chiedere a chiara
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-
-						
+		
