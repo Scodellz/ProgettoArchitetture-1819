@@ -1,5 +1,5 @@
 # GRUPPO DI LAVORO :
-# DUCCIO SERAFINI			E-MAIL:
+# DUCCIO SERAFINI			E-MAIL: 
 # ANDRE CRISTHIAN BARRETO DONAYRE	E-MAIL: andre.barreto@stud.unifi.it
 # 
 # DATA DI CONSEGNA 
@@ -8,7 +8,7 @@
 
 .data 
 # Stringhe dedicate al menu di benvenuto 
-	welcome: 	.asciiz 	" Benvenuto! scelgliere una delle tre opzioni:\n"
+	welcome: 	.asciiz 	" Benvenuto! scelgli una delle tre opzioni:\n"
 	firstChoice:	.asciiz		" Premi 1 - per criptare il messaggio.\n "
 	secondChoice:	.asciiz		"premi 2 - per decriptare il messaggio.\n "
 	exit:		.asciiz		"premi 0 - per terminare il programma.\n "
