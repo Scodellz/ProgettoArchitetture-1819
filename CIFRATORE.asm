@@ -5,7 +5,6 @@
 # DATA DI CONSEGNA: 
 #
 #
-
 .data 
 # STRINGHE DEDICATE ALLA VISUALIZZAZIONE DEL MENU' PRINCIPALE
 	welcome: 	.asciiz 	" Benvenuto! scelgli una delle tre opzioni:\n"
@@ -21,6 +20,13 @@
 	messaggio:	.asciiz		".marSETUP/messaggio.txt"
 	chiave:		.asciiz 	".marSETUP/chiave.txt"
 # DESCRITTORI DEI FILE IN USCITA 
+
+# STRINGHE PER LA VISUALIZAZIONE DELLA CHIAVE LETTA ++++++++++++++++++++++++ DA TOGLIERE 
+ 	proceduraA:	.asciiz		"\n questa è la proceduraA"
+	proceduraB:	.asciiz		"\n questa è la proceduraB"
+	proceduraC:	.asciiz		"\n questa è la proceduraC"
+	proceduraD:	.asciiz		"\n questa è la proceduraD"
+	proceduraE:	.asciiz		"\n questa e'la proceduraE"
 
 
 .align 2
@@ -53,15 +59,16 @@ main:
 	
 	j 	exit
 	
-#casi del MenuJAT e' qui dove devono essere caricati i vari flag di controllo ,e fare i jal alle varie procedure 
-					
+# CASI DEL MENUJAT 					
 cifratura:	li	$v0, 4				# eseguiamo le procedure di decifraturaaggio
 		la	$a0, opCifra			
 		syscall 
 		
-		jal	leggiChiave
+		# jal	leggiMessaggio dove finisce il riferimento al suo buffer non piu vuoto ???
 		
-		jal	leggiMessaggio
+		jal	leggiChiave
+		move	$a0, $v0		
+		jal	Core
 		
 		
 		j	exit	
@@ -82,6 +89,29 @@ decrifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
 uscita:		j 	exit				# salta alla sezione di uscita
 
 
+# ****************************************************************************************************	
+
+
+# PROCEDURA CHE SCORRE IL BUFFERKEY E PER OGNI SIMBOLO CHIAMA UN ALGORITMO DIVERSO
+# PASSANDO GLI OGNI VOLTA BUFFERREADER
+# parametri: $a0<--- prende il riferimento a keyBuffer
+# 	     $a1<--- deve avere il buffer reader	
+# 
+Core:
+	addi 	$sp, $sp, -4
+	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante
+	
+	
+	lb	$t0, ($a0)
+	
+	
+	lw	$ra, 0($sp)
+	addi	$sp, $sp, 4
+	jr	$ra
+	  
+# *****************************************************************************************************
+
+
 # PROCEDURA DEDICATA ALLA LETTURA DELLE CHIAVI SIA IN FASE DI CRIPTAGGIO CHE DECRIPTAGGIO (IN CUI PRIMA DI SCRIVERLA LA DEVE INVERTIRE )
 #
 # 
@@ -96,38 +126,35 @@ leggiChiave:
 	la	$a1, bufferKey
 	li	$a2, 5
 	jal	readFile
-	
-	move	$a0, $a1
-	jal 	printContent
+	move	$v0, $a1		# sposto nel registro per i valori di ritorno, il riferimento al bufferKey PIENO
 	
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
 	
-	jr 	$ra
-	
-# ****************************************************************************************************	
+	jr 	$ra	
+# ****************************************************************************************************
 
+
+#
+#
+#
 leggiMessaggio:
 	addi 	$sp, $sp, -4
 	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante 
 	
 	la	$a0, messaggio		# carico il descrittore del file
 	jal 	openFile		# apro il file in solo lettura
-	
 	move	$a0, $v0		# passo il descrittore del file alla prossima procedura
 	la	$a1, bufferReader
 	li	$a2, 255
 	jal	readFile
-	
-	move	$a0, $a1
-	jal 	printContent
 	
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
 	
 	jr 	$ra
 
-
+# ****************************************************************************************************
 
 # PROCEDURA CHE PERMETTE DI APRILE UN FILE IN SOLO LETTURA
 # parametri : $a0 <--- descrittore del file 
