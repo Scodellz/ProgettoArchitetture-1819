@@ -14,8 +14,8 @@
 	thirdChoice:	.asciiz		"premi 0 - per terminare il programma.\n "
 	Choice:		.asciiz		"opzione: "
 # STRINGHE DEDICATE PER LA VISUALIZZAZIONE DELLA OPERAZIONE IN CORSO
-	cifraturaaggio:	.asciiz		" cifraturaaggio in corso..."
-	decifraturaaggio:	.asciiz		" decifraturaaggio in corso..."
+	opCifra:	.asciiz		" cifraturaaggio in corso..."
+	opDecif:	.asciiz		" decifraturaaggio in corso..."
 	done:		.asciiz 	"\n operazione terminata. " 
 # DESCRITTORI DEI FILE IN INGRESSO 
 	messaggio:	.asciiz		".marSETUP/messaggio.txt"
@@ -55,8 +55,8 @@ main:
 	
 #casi del MenuJAT e' qui dove devono essere caricati i vari flag di controllo ,e fare i jal alle varie procedure 
 					
-cifratura:		li	$v0, 4				# eseguiamo le procedure di decifraturaaggio
-		la	$a0, cifraturaaggio			
+cifratura:	li	$v0, 4				# eseguiamo le procedure di decifraturaaggio
+		la	$a0, opCifra			
 		syscall 
 		
 		jal	leggiChiave
@@ -66,9 +66,9 @@ cifratura:		li	$v0, 4				# eseguiamo le procedure di decifraturaaggio
 		
 		j	exit	
 						
-decrifratura:		li	$v0, 4				# eseguiamo le procedure di decifraturaaggio
-		la	$a0, decifraturaaggio		# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto è vuoto, messaggio di err	
-		syscall 				# oppure mettere nella discrizione che non sono stati tenuti conti di certi casi 
+decrifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
+		la	$a0, opDecif		# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto è vuoto, messaggio di err	
+		syscall 			# oppure mettere nella discrizione che non sono stati tenuti conti di certi casi 
 		
 # la prima cosa da fare qui dentro è chiamare una procedura che controlli se il file "messaggioDEcifrato è pieno"
 # se non lo è stampa una strina di errore e ripropone il menu iniziale 
