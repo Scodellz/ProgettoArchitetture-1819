@@ -113,8 +113,17 @@ opCore:	lb	$t0, ($a0)
 # nella chiamata alle varie procedure deve essere salvato il registro di riferimento al buffer delle chiavu 
 callProcedureA:
 	addi 	$sp, $sp, -4
-	sw   	$a0, 0($sp)			
+	sw   	$a0, 0($sp)
 	
+	# questa parte va generalizzata
+	li	$s0, 0			
+	li	$s1, 0		# questo va letto dell'esterno:  0 - cripta | 1- decifra
+	li	$s2, 1
+	jal	shifter
+	
+	la	$a0, bufferReader
+	jal 	printContent
+
 	
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
@@ -125,7 +134,12 @@ callProcedureB:
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
 	
-
+	# questa parte va generalizzata
+	li	$s0, 0
+	li	$s1, 0		# questo va letto dell'esterno:  0 - cripta | 1- decifra
+	li	$s2, 2
+	jal	shifter
+	
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
 	
@@ -137,13 +151,9 @@ callProcedureC:
 	
 	# questa parte va generalizzata
 	li	$s0, 1
-	li	$s1, 0
+	li	$s1, 0		# questo va letto dall'esterno:  0 - cripta | 1- decifra
 	li	$s2, 2
 	jal	shifter
-	
-	li	$v0, 4		# per visulizzare risultato parziale 
-	la	$a0, bufferReader
-	syscall
 	
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
@@ -267,7 +277,7 @@ shifter:
 	add	$a3, $a3, $s0 		# definiamo l'indice di partenza	
 								
 convert:lb	$t0, ($a3) 		# $t0 carichiamo la lettera da cifrare
-	beqz    $t0, exitShifter	# controlliamo di non essere arrivati alla fine 
+	beq	$t0, 10, exitShifter	# controlliamo di non essere arrivati alla fine 
 	li	$t1, 255		# definiamo il valore del modulo 
 	li	$t2, 4			# costante di cifratura		
 	move	$t3, $s1		# flag di operazione
