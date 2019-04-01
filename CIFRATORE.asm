@@ -6,20 +6,20 @@
 #
 #
 .data 
-# STRINGHE DEDICATE ALLA VISUALIZZAZIONE DEL MENU' PRINCIPALE
+# STRINGHE DEDICATE ALLA VISUALIZZAZIONE DEL MENU' PRINCIPALE:
 	welcome: 	.asciiz 	" Benvenuto! scelgli una delle tre opzioni:\n"
 	firstChoice:	.asciiz		" Premi 1 - per cifrare il messaggio.\n "
 	secondChoice:	.asciiz		"premi 2 - per decifrare il messaggio.\n "
 	thirdChoice:	.asciiz		"premi 0 - per terminare il programma.\n "
 	Choice:		.asciiz		"opzione: "
-# STRINGHE DEDICATE PER LA VISUALIZZAZIONE DELLA OPERAZIONE IN CORSO
-	opCifra:	.asciiz		" cifraturaaggio in corso..."
-	opDecif:	.asciiz		" decifraturaaggio in corso..."
+# STRINGHE DEDICATE PER LA VISUALIZZAZIONE DELLA OPERAZIONE IN CORSO:
+	opCifra:	.asciiz		" cifratura in corso..."
+	opDecif:	.asciiz		" decifratura in corso..."
 	done:		.asciiz 	"\n operazione terminata. " 
-# DESCRITTORI DEI FILE IN INGRESSO 
+# DESCRITTORI DEI FILE IN INGRESSO: 
 	messaggio:	.asciiz		".marSETUP/messaggio.txt"
 	chiave:		.asciiz 	".marSETUP/chiave.txt"
-# DESCRITTORI DEI FILE IN USCITA 
+# DESCRITTORI DEI FILE IN USCITA: 
 
 # STRINGHE PER LA VISUALIZAZIONE DELLA CHIAVE LETTA ++++++++++++++++++++++++ DA TOGLIERE 
  	proceduraA:	.asciiz		"\n questa è la proceduraA"
@@ -30,9 +30,9 @@
 
 
 .align 2
-# JAT TABLE DEDICATA ALLA GESTIONE DEL MENU' INIZIALE
+# JAT TABLE DEDICATA ALLA GESTIONE DEL MENU' INIZIALE:
 	menuJAT:	.space		8
-# BUFFER DEDICATI ALLA LETTURA DEI DATI DEI FILE IN INPUT
+# BUFFER DEDICATI ALLA LETTURA DEI DATI DEI FILE IN INPUT:
 	bufferReader:	.space	    255
 	bufferKey:	.space	    5	
 # 	
@@ -51,31 +51,29 @@ main:
 
 	jal	initmenuJAT		# chiama la procedura che inizializza la tabella dei salti per il menù				
 	jal 	menuIniziale		# presentazione del menù iniziale
-	li	$v0, 5			# lettura della scelta effetuata 
-		syscall			# il numero letto si troverà in $v0
+	
+	li	$v0, 5			# lettura della scelta effetuata, il numero letto si troverà in $v0
+		syscall		
 		
-	move	$a0, $v0		# passo il parametro 
+	move	$a0, $v0		# passo il parametro letto per eseguire la scelta desiderata
 	jal	calcoloScelta
 	
 	j 	exit
 	
 # CASI DEL MENUJAT 					
-cifratura:	li	$v0, 4				# eseguiamo le procedure di decifraturaaggio
+cifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
 		la	$a0, opCifra			
 		syscall 
 		
-		# jal	leggiMessaggio dove finisce il riferimento al suo buffer non piu vuoto ???
-		
-		jal	leggiChiave
-		move	$a0, $v0		
+		jal	leggiChiave	# jal	leggiMessaggio dove finisce il riferimento al suo buffer non piu vuoto ???
+		move	$a0, $v0	# passo come parametro il registro al buffer key 	
 		jal	Core
-		
 		
 		j	exit	
 						
 decrifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
-		la	$a0, opDecif		# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto è vuoto, messaggio di err	
-		syscall 			# oppure mettere nella discrizione che non sono stati tenuti conti di certi casi 
+		la	$a0, opDecif	# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto è vuoto, messaggio di err	
+		syscall 		# oppure mettere nella discrizione che non sono stati tenuti conti di certi casi 
 		
 # la prima cosa da fare qui dentro è chiamare una procedura che controlli se il file "messaggioDEcifrato è pieno"
 # se non lo è stampa una strina di errore e ripropone il menu iniziale 
@@ -95,16 +93,93 @@ uscita:		j 	exit				# salta alla sezione di uscita
 # PROCEDURA CHE SCORRE IL BUFFERKEY E PER OGNI SIMBOLO CHIAMA UN ALGORITMO DIVERSO
 # PASSANDO GLI OGNI VOLTA BUFFERREADER
 # parametri: $a0<--- prende il riferimento a keyBuffer
-# 	     $a1<--- deve avere il buffer reader	
+# 	     $a1<--- deve avere il buffer reader	DA AGGIUNGERE 
+#
+# DEVE RITORNARE IL REGISTRO DI RIFERIMENTO AD UN BUFFER PER PASSARE AL PROCESSO CHE SCRIVE NEL FILE DI USCITA
 # 
 Core:
 	addi 	$sp, $sp, -4
 	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante
 	
 	
-	lb	$t0, ($a0)
+opCore:	lb	$t0, ($a0)		
+	beq	$t0, $zero, exitCore
+	li	$t1, 65
+	sub	$t0, $t0, $t1
 	
+	beq	$t0, 0, callProcedureA		# GENERALIZZARE
+	beq	$t0, 1, callProcedureB
+	beq	$t0, 2, callProcedureC
+	beq	$t0, 3, callProcedureD
+	beq	$t0, 4, callProcedureE
+# nella chiamata alle varie procedure deve essere salvato il registro di riferimento al buffer delle chiavu 
+#
+#
+# 	
+callProcedureA:
+	addi 	$sp, $sp, -4
+	sw   	$a0, 0($sp)		
 	
+	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
+	la	$a0, proceduraA							
+		syscall
+	
+	lw	$a0, 0($sp)
+	addi	$sp, $sp, 4
+	j	goNext
+	
+callProcedureB:	
+	addi 	$sp, $sp, -4
+	sw   	$a0, 0($sp)
+	
+	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
+	la	$a0, proceduraB							
+		syscall
+		
+	lw	$a0, 0($sp)
+	addi	$sp, $sp, 4
+	j	goNext
+	
+callProcedureC:	
+	addi 	$sp, $sp, -4
+	sw   	$a0, 0($sp)
+	
+	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
+	la	$a0, proceduraC							
+		syscall 
+		
+	lw	$a0, 0($sp)
+	addi	$sp, $sp, 4
+	j	goNext
+	
+callProcedureD:
+	addi 	$sp, $sp, -4
+	sw   	$a0, 0($sp)
+		
+	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
+	la	$a0, proceduraD							
+		syscall
+		 
+	lw	$a0, 0($sp)
+	addi	$sp, $sp, 4
+	j	goNext
+	
+callProcedureE:
+	addi 	$sp, $sp, -4
+	sw   	$a0, 0($sp)
+	
+	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
+	la	$a0, proceduraE							
+		syscall 
+		
+	lw	$a0, 0($sp)
+	addi	$sp, $sp, 4
+	j	goNext			
+
+goNext:	addi	$a0, $a0, 1	
+	j	opCore	
+					
+exitCore:
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
 	jr	$ra
@@ -113,8 +188,8 @@ Core:
 
 
 # PROCEDURA DEDICATA ALLA LETTURA DELLE CHIAVI SIA IN FASE DI CRIPTAGGIO CHE DECRIPTAGGIO (IN CUI PRIMA DI SCRIVERLA LA DEVE INVERTIRE )
-#
 # 
+# valore di ritorno, il registro del buffer pieno è in $v0
 leggiChiave:
 	addi 	$sp, $sp, -4
 	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante 
@@ -128,7 +203,7 @@ leggiChiave:
 	jal	readFile
 	move	$v0, $a1		# sposto nel registro per i valori di ritorno, il riferimento al bufferKey PIENO
 	
-	lw	$ra, 0($sp)
+	lw	$ra, 0($sp)		# ripristino l'indirizzo del chiamante originale
 	addi	$sp, $sp, 4
 	
 	jr 	$ra	
