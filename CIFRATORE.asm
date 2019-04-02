@@ -26,7 +26,7 @@
 # JAT TABLE DEDICATA ALLA GESTIONE DEL MENU' INIZIALE:
 	menuJAT:	.space		8
 # BUFFER DEDICATI ALLA LETTURA DEI DATI DEI FILE IN INPUT:
-	bufferReader:	.space	    255
+	bufferReader:	.space	    	255
 	bufferKey:	.space	    5	
 # 	
 
@@ -98,11 +98,12 @@ Core:
 	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante
 	
 	
-opCore:	lb	$t0, ($a0)		
-	beq	$t0, $zero, exitCore
+opCore:	lb	$t0, ($a0)		# carico il primo carattere della chiave
+	beqz	$t0, exitCore
 	li	$t1, 65
-	sub	$t0, $t0, $t1	
-	beq	$t0, 10, exitCore
+	sub	$t0, $t0, $t1
+	slt	$t1, $t0, $zero
+	beq	$t1, 1, goNext	
 	
 	beq	$t0, 0, callProcedureA		# GENERALIZZARE
 	beq	$t0, 1, callProcedureB
@@ -277,12 +278,12 @@ shifter:
 	add	$a3, $a3, $s0 		# definiamo l'indice di partenza	
 								
 convert:lb	$t0, ($a3) 		# $t0 carichiamo la lettera da cifrare
-	beq	$t0, 10, exitShifter	# controlliamo di non essere arrivati alla fine 
+	beqz	$t0, exitShifter	# controlliamo di non essere arrivati alla fine 
 	li	$t1, 255		# definiamo il valore del modulo 
 	li	$t2, 4			# costante di cifratura		
 	move	$t3, $s1		# flag di operazione
 	
-decrip:	beq	$t3, $zero, crip	# operazione di decifratura 	 
+decrip:	beqz	$t3, crip	# operazione di decifratura 	 
 	li 	$t4, -1			# AGGIUNGERE CONTROLLO SUI NEGATIVI   
 	mult	$t2, $t4		#
 	mflo	$t2		
@@ -293,7 +294,7 @@ crip:	add	$t0, $t0, $t2		# operazione di cifratura
 	sb	$t0, 0($a3)		# salvo il nuovo contenuto da stampare sullo stesso buffer !!!
 	
 					#  
-	add	$a3, $a3,$s2		# 
+	add	$a3, $a3,$s2		# somma del passo di scorrimento
 	j 	convert	
 	
 exitShifter:
@@ -349,7 +350,7 @@ exit:
 	lw 	$s2, 12($sp)
 	addi 	$sp, $sp, 16
 	
-	li	$v0,4				
+	li	$v0, 4				
 	la	$a0, done			# visualizza il messaggio di terminazione del programma							
 	syscall				
 	
