@@ -21,19 +21,12 @@
 	chiave:		.asciiz 	".marSETUP/chiave.txt"
 # DESCRITTORI DEI FILE IN USCITA: 
 
-# STRINGHE PER LA VISUALIZAZIONE DELLA CHIAVE LETTA ++++++++++++++++++++++++ DA TOGLIERE 
- 	proceduraA:	.asciiz		"\n questa è la proceduraA"
-	proceduraB:	.asciiz		"\n questa è la proceduraB"
-	proceduraC:	.asciiz		"\n questa è la proceduraC"
-	proceduraD:	.asciiz		"\n questa è la proceduraD"
-	proceduraE:	.asciiz		"\n questa e'la proceduraE"
-
 
 .align 2
 # JAT TABLE DEDICATA ALLA GESTIONE DEL MENU' INIZIALE:
 	menuJAT:	.space		8
 # BUFFER DEDICATI ALLA LETTURA DEI DATI DEI FILE IN INPUT:
-	bufferReader:	.space	    255
+	bufferReader:	.space	    	255
 	bufferKey:	.space	    5	
 # 	
 
@@ -49,7 +42,8 @@ main:
 	sw 	$s1, 8($sp)
 	sw 	$s2, 12($sp) 
 
-	jal	initmenuJAT		# chiama la procedura che inizializza la tabella dei salti per il menù				
+	jal	initmenuJAT		# chiama la procedura che inizializza la tabella dei salti per il menù
+	move 	$s6, $v0				
 	jal 	menuIniziale		# presentazione del menù iniziale
 	
 	li	$v0, 5			# lettura della scelta effetuata, il numero letto si troverà in $v0
@@ -65,8 +59,12 @@ cifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
 		la	$a0, opCifra			
 		syscall 
 		
-		jal	leggiChiave	# jal	leggiMessaggio dove finisce il riferimento al suo buffer non piu vuoto ???
-		move	$a0, $v0	# passo come parametro il registro al buffer key 	
+		jal	leggiMessaggio
+		move 	$s7,$v0		# sposto il registro di riferimento che contiene il messaggio appena letto
+	
+		jal	leggiChiave
+		move	$a0, $v0	# passo come parametro il registro al bufferkey 
+		move	$a1, $s7	# passo come parametro il registro al bufferReader
 		jal	Core
 		
 		j	exit	
@@ -75,20 +73,18 @@ decrifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
 		la	$a0, opDecif	# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto è vuoto, messaggio di err	
 		syscall 		# oppure mettere nella discrizione che non sono stati tenuti conti di certi casi 
 		
-# la prima cosa da fare qui dentro è chiamare una procedura che controlli se il file "messaggioDEcifrato è pieno"
-# se non lo è stampa una strina di errore e ripropone il menu iniziale 
+					# la prima cosa da fare qui dentro è chiamare una procedura che controlli se il file "messaggioDEcifrato è pieno"
+					# se non lo è stampa una strina di errore e ripropone il menu iniziale 
 
-# se il controllo viene superato, l'algoritmo diD per invertire la chiave 
+					# se il controllo viene superato, l'algoritmo diD per invertire la chiave 
 
-# e si esegue la procedura di cifraturaaggio		
+					# e si esegue la procedura di cifraturaaggio		
 												
-		j	exit				# oppure di riproporre direttamente il menu principale 	
+		j	exit		# oppure di riproporre direttamente il menu principale 	
 		
-uscita:		j 	exit				# salta alla sezione di uscita
-
+uscita:		j 	exit		# salta alla sezione di uscita
 
 # ****************************************************************************************************	
-
 
 # PROCEDURA CHE SCORRE IL BUFFERKEY E PER OGNI SIMBOLO CHIAMA UN ALGORITMO DIVERSO
 # PASSANDO GLI OGNI VOLTA BUFFERREADER
@@ -101,56 +97,65 @@ Core:
 	addi 	$sp, $sp, -4
 	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante
 	
-	
-opCore:	lb	$t0, ($a0)		
-	beq	$t0, $zero, exitCore
-		
+opCore:	lb	$t0, ($a0)		# carico il primo carattere della chiave
+	beqz	$t0, exitCore
 	li	$t1, 65
 	sub	$t0, $t0, $t1
 	slt	$t1, $t0, $zero
 	beq	$t1, 1, goNext
+
 	
 	beq	$t0, 0, callProcedureA		# GENERALIZZARE
 	beq	$t0, 1, callProcedureB
 	beq	$t0, 2, callProcedureC
 	beq	$t0, 3, callProcedureD
 	beq	$t0, 4, callProcedureE
+	
 # nella chiamata alle varie procedure deve essere salvato il registro di riferimento al buffer delle chiavu 
-#
-#
-# 	
 callProcedureA:
 	addi 	$sp, $sp, -4
-	sw   	$a0, 0($sp)		
+	sw   	$a0, 0($sp)
 	
-	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
-	la	$a0, proceduraA							
-		syscall
+	# questa parte va generalizzata
+	li	$s0, 0			
+	li	$s1, 0		# questo va letto dell'esterno:  0 - cripta | 1- decifra
+	li	$s2, 1
+	jal	shifter
+	
+	la	$a0, bufferReader
+	jal 	printContent
+
 	
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
+	
 	j	goNext
 	
 callProcedureB:	
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
 	
-	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
-	la	$a0, proceduraB							
-		syscall
-		
+	# questa parte va generalizzata
+	li	$s0, 0
+	li	$s1, 0		# questo va letto dell'esterno:  0 - cripta | 1- decifra
+	li	$s2, 2
+	jal	shifter
+	
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
+	
 	j	goNext
 	
 callProcedureC:	
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
 	
-	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
-	la	$a0, proceduraC							
-		syscall 
-		
+	# questa parte va generalizzata
+	li	$s0, 1
+	li	$s1, 0		# questo va letto dall'esterno:  0 - cripta | 1- decifra
+	li	$s2, 2
+	jal	shifter
+	
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
 	j	goNext
@@ -159,24 +164,20 @@ callProcedureD:
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
 		
-	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
-	la	$a0, proceduraD							
-		syscall
-		 
+		
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
+	
 	j	goNext
 	
 callProcedureE:
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
 	
-	li	$v0, 4			# eseguiamo le procedure di decifratoreaggio
-	la	$a0, proceduraE							
-		syscall 
 		
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
+	
 	j	goNext			
 
 goNext:	addi	$a0, $a0, 1	
@@ -213,7 +214,7 @@ leggiChiave:
 # ****************************************************************************************************
 
 
-#
+# 
 #
 #
 leggiMessaggio:
@@ -226,6 +227,7 @@ leggiMessaggio:
 	la	$a1, bufferReader
 	li	$a2, 255
 	jal	readFile
+	move	$v0, $a1		# sposto nel registro per i valori di ritorno, il riferimento al bufferReader PIENO
 	
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
@@ -261,6 +263,44 @@ printContent:
 	syscall
 	jr	$ra
 
+
+# PROCEDURA GENERICA CHE SVOLGERA IL CIFRATURA E LA DECIFRATURA DEGLI ALGORITMI A - B - C 
+# : il suo confortamento sarà definito dal settaggio di alcuni flag, da procedure dedicate 
+#  parametri :
+#	$s0 <--  offset di inizio di scorrimento del buffer
+#	$s1 <--  flag distinzione tra operazione di CRIFRATURA e DECIFRATURA
+#	$s2 <--	 offset dedicato al passo di scorrimento del buffer
+# viene utilizzato il solito buffer
+
+shifter:	
+		 
+	la	$a3, bufferReader	# salvo il puntatore al buffer
+	add	$a3, $a3, $s0 		# definiamo l'indice di partenza	
+								
+convert:lb	$t0, ($a3) 		# $t0 carichiamo la lettera da cifrare
+	beqz	$t0, exitShifter	# controlliamo di non essere arrivati alla fine 
+	li	$t1, 255		# definiamo il valore del modulo 
+	li	$t2, 4			# costante di cifratura		
+	move	$t3, $s1		# flag di operazione
+	
+decrip:	beqz	$t3, crip	# operazione di decifratura 	 
+	li 	$t4, -1			# AGGIUNGERE CONTROLLO SUI NEGATIVI   
+	mult	$t2, $t4		#
+	mflo	$t2		
+	
+crip:	add	$t0, $t0, $t2		# operazione di cifratura			
+	div	$t0, $t1
+	mfhi	$t0  		 		
+	sb	$t0, 0($a3)		# salvo il nuovo contenuto da stampare sullo stesso buffer !!!
+	
+					#  
+	add	$a3, $a3,$s2		# somma del passo di scorrimento
+	j 	convert	
+	
+exitShifter:
+	jr	$ra 	
+# ****************************************************************************************************************
+	
 # procedura che calcola la posizione in cui saltare nella menuJAT  
 calcoloScelta:	
 	slt	$t1, $a0, $zero		# confronta se la scleta insierita e' < = 0
@@ -273,7 +313,8 @@ calcoloScelta:
 	lw	$t0, menuJAT($t3)	# carico la posizione richiesta 																			
 	jr	$t0			# viene eseguito il salto alla posizione richiesta
 	
-# ***** PROCEDURA CHE INIZIALIZZA GLI INDIRIZZI DI SALTO DEDICATI AL MENU PRINCIPALE  
+# ***** PROCEDURA CHE INIZIALIZZA GLI INDIRIZZI DI SALTO DEDICATI AL MENU PRINCIPALE 
+# il registro di riferimento per la tabella dei salti è $v0 
 initmenuJAT:	la	$t4, menuJAT			
 		la	$t5, uscita
 		sw	$t5, 0($t4)		# carico il caso dell'uscita nella posizione zero			
@@ -309,12 +350,12 @@ exit:
 	lw 	$s2, 12($sp)
 	addi 	$sp, $sp, 16
 	
-	li	$v0,4				
+	li	$v0, 4				
 	la	$a0, done			# visualizza il messaggio di terminazione del programma							
 	syscall				
 	
 	li $v0,10
 	syscall
 		
-	# jr $ra 	# forse si toglie, forse no, da chiedere a chiara
+	# jr $ra 				# forse si toglie, forse no, da chiedere a chiara
 		
