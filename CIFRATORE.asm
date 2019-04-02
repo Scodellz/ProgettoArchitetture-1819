@@ -104,8 +104,11 @@ Core:
 	
 opCore:	lb	$t0, ($a0)		
 	beq	$t0, $zero, exitCore
+		
 	li	$t1, 65
 	sub	$t0, $t0, $t1
+	slt	$t1, $t0, $zero
+	beq	$t1, 1, goNext
 	
 	beq	$t0, 0, callProcedureA		# GENERALIZZARE
 	beq	$t0, 1, callProcedureB
