@@ -1,25 +1,37 @@
 .data
-	buffer: 	.asciiz	"dioCane"
+	buffer: 	.asciiz	"Prova"
 
 .align 2
 .text
 
 main:
-#	li	$a1, 0
-#	jal	A
-#	li	$a1, 1
-#	jal	A
+	li	$a1, 0
+	jal	A
+	
 	
 	li	$a1, 0
 	jal	B
-	li	$a1, 1
-	jal	B
-	
-	li	$a1, 0
-	jal	C
-	li	$a1, 1
-	jal	C
 
+	
+	li	$a1, 0
+	jal	C
+	
+	li	$v0, 4
+	la	$a0, buffer
+	syscall
+	
+	li	$a1, 1
+	jal	C
+	
+	li	$a1, 1
+	jal	B
+	
+	li	$a1, 1
+	jal	A
+
+	li	$v0, 4
+	la	$a0, buffer
+	syscall
 	
 	li 	$v0,10
 	syscall	
@@ -86,11 +98,7 @@ crip:	add	$t0, $t0, $t2	# operazione di cifratura
 	add	$a3, $a3,$s2	# 
 	j 	convert
 		
-exit:	li	$v0, 4
-	la	$a0, buffer
-	syscall
-
-	jr	$ra	
+exit:	jr	$ra	
 
 
 		
