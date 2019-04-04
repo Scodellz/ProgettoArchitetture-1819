@@ -8,7 +8,7 @@
 .data 
 # STRINGHE DEDICATE PER LA VISUALIZZAZIONE DELLA OPERAZIONE IN CORSO:
 	opCifra:	.asciiz		" cifratura in corso...\n"
-	opDecif:	.asciiz		" \n decifratura in corso...\n "
+	opDecif:	.asciiz		"\n decifratura in corso...\n "
 	done:		.asciiz 	" \n operazione terminata. " 
 # DESCRITTORI DEI FILE IN INGRESSO: 
 	messaggio:	.asciiz		".marSETUP/messaggio.txt"
@@ -40,20 +40,17 @@ main:
 	la	$a0, bufferReader
 	syscall
 	
-	jal 	decrifratura	
+	#jal 	decrifratura	
 		
 	j 	exit
 	
-# CASI DEL MENUJAT 					
+# MAIN PROCEDURES					
 cifratura:	addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
 		sw	$ra, 0($sp)
 
 		li	$v0, 4			# eseguiamo le procedure di decifraturaaggio
 		la	$a0, opCifra			
 		syscall 
-		
-		addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
-		sw	$ra, 0($sp)
 		
 		la	$a0, messaggio		# carico il descrittore del file
 		jal	leggiMessaggio
@@ -70,14 +67,13 @@ cifratura:	addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
 		addi	$sp, $sp, 4
 		jr	$ra
 		
-			
-						
+										
 decrifratura:	addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
 		sw	$ra, 0($sp)
 
-		li	$v0, 4		# 
-		la	$a0, opDecif	# 				
-		syscall 		# 
+		li	$v0, 4			# 
+		la	$a0, opDecif		# 				
+		syscall 			# 
 		 
 		
 	
@@ -85,9 +81,7 @@ decrifratura:	addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
 		addi	$sp, $sp, 4
 		jr	$ra
 		
-			
 		
-# ********************************************************************************************************************
 # PROCEDURA CHE SCORRE IL BUFFERKEY E PER OGNI SIMBOLO CHIAMA UN ALGORITMO DIVERSO
 # PASSANDO GLI OGNI VOLTA BUFFERREADER
 # parametri: $a0<--- prende il riferimento a keyBuffer
@@ -106,14 +100,12 @@ opCore:	lb	$t0, ($a0)		# carico il primo carattere della chiave
 	slt	$t1, $t0, $zero
 	beq	$t1, 1, goNext
 
-	
-	beq	$t0, 0, callProcedureA		# GENERALIZZARE
+	beq	$t0, 0, callProcedureA		
 	beq	$t0, 1, callProcedureB
 	beq	$t0, 2, callProcedureC
 	beq	$t0, 3, callProcedureD
 	beq	$t0, 4, callProcedureE
-	
-	# nella chiamata alle varie procedure deve essere salvato il registro di riferimento al buffer delle chiavu 
+	 
 callProcedureA:
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
@@ -185,10 +177,8 @@ exitCore:
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
 	jr	$ra
+	
 	  
-
-
-
 # PROCEDURA DEDICATA ALLA LETTURA DELLE CHIAVI SIA IN FASE DI CRIPTAGGIO CHE DECRIPTAGGIO (IN CUI PRIMA DI SCRIVERLA LA DEVE INVERTIRE ) 
 # valore di ritorno, il registro del buffer pieno è in $v0
 # PAREMETRI: $a0 il riferimento a file contenente la chiave
