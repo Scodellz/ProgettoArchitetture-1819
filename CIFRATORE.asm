@@ -7,9 +7,9 @@
 #
 .data 
 # STRINGHE DEDICATE PER LA VISUALIZZAZIONE DELLA OPERAZIONE IN CORSO:
-	opCifra:	.asciiz		" cifratura in corso..."
-	opDecif:	.asciiz		" decifratura in corso..."
-	done:		.asciiz 	"\n operazione terminata. " 
+	opCifra:	.asciiz		" cifratura in corso...\n"
+	opDecif:	.asciiz		" \n decifratura in corso...\n "
+	done:		.asciiz 	" \n operazione terminata. " 
 # DESCRITTORI DEI FILE IN INGRESSO: 
 	messaggio:	.asciiz		".marSETUP/messaggio.txt"
 	chiave:		.asciiz 	".marSETUP/chiave.txt"
@@ -36,41 +36,58 @@ main:
 
 	jal	cifratura
 	
+	li	$v0, 4
+	la	$a0, bufferReader
+	syscall
+	
+	jal 	decrifratura	
+		
 	j 	exit
 	
 # CASI DEL MENUJAT 					
-cifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
+cifratura:	addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
+		sw	$ra, 0($sp)
+
+		li	$v0, 4			# eseguiamo le procedure di decifraturaaggio
 		la	$a0, opCifra			
 		syscall 
 		
-		la	$a0, messaggio	# carico il descrittore del file
+		addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
+		sw	$ra, 0($sp)
+		
+		la	$a0, messaggio		# carico il descrittore del file
 		jal	leggiMessaggio
-		move 	$s7,$v0		# sposto il registro di riferimento che contiene il messaggio appena letto
+		move 	$s7,$v0			# sposto il registro di riferimento che contiene il messaggio appena letto
 	
+		la	$a0, chiave		# carico il descrittore del file
 		jal	leggiChiave
-		move	$a0, $v0	# passo come parametro il registro al bufferkey 
-		move	$a1, $s7	# passo come parametro il registro al bufferReader
+		
+		move	$a0, $v0		# passo come parametro il registro al bufferkey 
+		move	$a1, $s7		# passo come parametro il registro al bufferReader
 		jal	Core
 		
-		jr	$ra	
+		lw	$ra, 0($sp)
+		addi	$sp, $sp, 4
+		jr	$ra
+		
+			
 						
-decrifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
-		la	$a0, opDecif	# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto è vuoto, messaggio di err	
-		syscall 		# oppure mettere nella discrizione che non sono stati tenuti conti di certi casi 
+decrifratura:	addi	$sp, $sp,-4		# alloco lo spazio per una word nello stack
+		sw	$ra, 0($sp)
+
+		li	$v0, 4		# 
+		la	$a0, opDecif	# 				
+		syscall 		# 
+		 
 		
-					# la prima cosa da fare qui dentro è chiamare una procedura che controlli se il file "messaggioDEcifrato è pieno"
-					# se non lo è stampa una strina di errore e ripropone il menu iniziale 
-
-					# se il controllo viene superato, l'algoritmo diD per invertire la chiave 
-
-					# e si esegue la procedura di cifraturaaggio		
-												
-		j	exit		# oppure di riproporre direttamente il menu principale 	
+	
+		lw	$ra, 0($sp)
+		addi	$sp, $sp, 4
+		jr	$ra
 		
-uscita:		j 	exit		# salta alla sezione di uscita
-
-# ****************************************************************************************************	
-
+			
+		
+# ********************************************************************************************************************
 # PROCEDURA CHE SCORRE IL BUFFERKEY E PER OGNI SIMBOLO CHIAMA UN ALGORITMO DIVERSO
 # PASSANDO GLI OGNI VOLTA BUFFERREADER
 # parametri: $a0<--- prende il riferimento a keyBuffer
@@ -96,7 +113,7 @@ opCore:	lb	$t0, ($a0)		# carico il primo carattere della chiave
 	beq	$t0, 3, callProcedureD
 	beq	$t0, 4, callProcedureE
 	
-# nella chiamata alle varie procedure deve essere salvato il registro di riferimento al buffer delle chiavu 
+	# nella chiamata alle varie procedure deve essere salvato il registro di riferimento al buffer delle chiavu 
 callProcedureA:
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
@@ -106,10 +123,6 @@ callProcedureA:
 	li	$s1, 0		# questo va letto dell'esterno:  0 - cripta | 1- decifra
 	li	$s2, 1
 	jal	shifter
-	
-	la	$a0, bufferReader
-	jal 	printContent
-
 	
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
@@ -173,17 +186,16 @@ exitCore:
 	addi	$sp, $sp, 4
 	jr	$ra
 	  
-# *****************************************************************************************************
 
 
-# PROCEDURA DEDICATA ALLA LETTURA DELLE CHIAVI SIA IN FASE DI CRIPTAGGIO CHE DECRIPTAGGIO (IN CUI PRIMA DI SCRIVERLA LA DEVE INVERTIRE )
-# 
+
+# PROCEDURA DEDICATA ALLA LETTURA DELLE CHIAVI SIA IN FASE DI CRIPTAGGIO CHE DECRIPTAGGIO (IN CUI PRIMA DI SCRIVERLA LA DEVE INVERTIRE ) 
 # valore di ritorno, il registro del buffer pieno è in $v0
+# PAREMETRI: $a0 il riferimento a file contenente la chiave
 leggiChiave:
 	addi 	$sp, $sp, -4
 	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante 
 	
-	la	$a0, chiave		# carico il descrittore del file
 	jal 	openFile		# apro il file in solo lettura
 	
 	move	$a0, $v0		# passo il descrittore del file alla prossima procedura
@@ -196,7 +208,7 @@ leggiChiave:
 	addi	$sp, $sp, 4
 	
 	jr 	$ra	
-# ****************************************************************************************************
+	
 
 # PROCEDURA DEDICATA ALLA LETTURA DEL FILE DI TESTO DA CRIFRARE O DECIFRARE 
 # PARAMETRI 		$a0<---- DESCRITTORE DEL FILE 
@@ -217,7 +229,6 @@ leggiMessaggio:
 	
 	jr 	$ra
 
-# ****************************************************************************************************
 
 # PROCEDURA CHE PERMETTE DI APRILE UN FILE IN SOLO LETTURA
 # parametri : $a0 <--- descrittore del file 
@@ -282,7 +293,6 @@ crip:	add	$t0, $t0, $t2		# operazione di cifratura
 	
 exitShifter:
 	jr	$ra 	
-# ****************************************************************************************************************
 	
 # fine del programma
 		
