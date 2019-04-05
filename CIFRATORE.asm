@@ -19,9 +19,10 @@
 .align 2
 # BUFFER DEDICATI ALLA LETTURA DEI DATI DEI FILE IN INPUT:
 	bufferReader:	.space	    	255
-	bufferKey:	.space	    5	
-# 	
-
+	bufferKey:	.space	   	 5	
+# BUFFER DECICATI AL SUPPORTO DELLE PROCEDURE:
+	supportBuffer: 	.space		255
+ 
 .align 2
 
 .text
@@ -111,6 +112,7 @@ callProcedureA:
 	sw   	$a0, 0($sp)
 	
 	# questa parte va generalizzata
+	la	$a3, bufferReader
 	li	$s0, 0			
 	li	$s1, 0		# questo va letto dell'esterno:  0 - cripta | 1- decifra
 	li	$s2, 1
@@ -126,6 +128,7 @@ callProcedureB:
 	sw   	$a0, 0($sp)
 	
 	# questa parte va generalizzata
+	la	$a3,bufferReader
 	li	$s0, 0
 	li	$s1, 0		# questo va letto dell'esterno:  0 - cripta | 1- decifra
 	li	$s2, 2
@@ -141,6 +144,7 @@ callProcedureC:
 	sw   	$a0, 0($sp)
 	
 	# questa parte va generalizzata
+	la	$a3, bufferReader
 	li	$s0, 1
 	li	$s1, 0		# questo va letto dall'esterno:  0 - cripta | 1- decifra
 	li	$s2, 2
@@ -153,7 +157,9 @@ callProcedureC:
 callProcedureD:
 	addi 	$sp, $sp, -4
 	sw   	$a0, 0($sp)
-		
+	
+	jal	algD
+	move	$a3, $v1
 		
 	lw	$a0, 0($sp)
 	addi	$sp, $sp, 4
@@ -239,13 +245,6 @@ readFile:
 	li 	$v0, 14
 	syscall
 	jr $ra
-		
-## PROCEDURA PER VISUALIZZARE IL CONTENUTO DI QUALSIASI BUFFER  ************************ DA TOGLIERE SOLO ALLA FINE 
-# parametri $a0 <- vuole il buffer da visualizzare 
-printContent:
-	li	$v0, 4
-	syscall
-	jr	$ra
 
 
 # PROCEDURA GENERICA CHE SVOLGERA IL CIFRATURA E LA DECIFRATURA DEGLI ALGORITMI A - B - C 
@@ -258,7 +257,7 @@ printContent:
 
 shifter:	
 		 
-	la	$a3, bufferReader	# salvo il puntatore al buffer
+#	la	$a3, bufferReader	# salvo il puntatore al buffer
 	add	$a3, $a3, $s0 		# definiamo l'indice di partenza	
 								
 convert:lb	$t0, ($a3) 		# $t0 carichiamo la lettera da cifrare
@@ -282,7 +281,61 @@ crip:	add	$t0, $t0, $t2		# operazione di cifratura
 	j 	convert	
 	
 exitShifter:
-	jr	$ra 	
+	jr	$ra 
+
+# PROCEDURA GENERICA DEDICATA ALL'INVERSIONE DI QUALCUASI STRINGA SIA DATA IN PASTO 
+# PARAMETRI : $a2 <--- bufferReader , buffer contenente la stringa a invertire 
+#	      $a3 <--- buffer di support alla procedura di inversione
+	
+algD:
+	la	$a2, bufferReader		# Metto il buffer di input in $a2
+	la	$a3, supportBuffer		# Carico il buffer che conterrà il messaggio da restituire in $a3
+	move	$t0, $zero			# Inizializzo contatore degli elementi della stringa a 0
+	
+counterD:					# Metodo che conta quanti elementi sono presenti nel buffer
+	lbu	$t1, ($a2)			# Carico il carattere puntato in $t1
+	beqz	$t1, endPointer			# Se sono arrivato alla fine della stringa il metodo termina
+	addi	$t0, $t0, 1			# Altrimenti aumento il contatore di 1
+	addi	$a2, $a2, 1			# Scorro alla posizione successiva del buffer
+	
+	j 	counterD				# Inizio un nuovo ciclo
+
+endPointer:
+	addi	$a2, $a2, -1			# Dato che il il puntatore e' fuori dal buffer, lo faccio tornare						# indietro di una posizione
+	move	$s0, $t0			# Dato che e' il numero degli elementi rimarra' invariato lo salvo in $s0
+	move	$t0, $zero			# Reinizializzo $t0 per contare il numero di elementi che verranno inseriti
+
+reversal:					# Metodo di inversione				
+	beq	$t0, $s0, override		# Se il numero dei caratteri inseriti è pari alla lunghezza del buffer
+						# allora posso uscire dalla procedura	
+	lbu	$t1, ($a2)			# Altrimenti metto in $t1 l'elemento del buffer di input
+	sb	$t1, ($a3)			# e lo salvo nel buffer di uscita
+
+	subi	$a2, $a2, 1			# Vado al carattere precedente del buffer di input
+	addi	$a3, $a3, 1			# Scorro alla posizione successiva del buffer di output
+	addi	$t0, $t0, 1			# Aumento di 1 il contatore dei caratteri inseriti
+	
+	j 	reversal
+	
+override:					# va generalizzata, perche va utilizzato anche nel 'algoritmoE
+	la	$a2, bufferReader
+	la	$a3, supportBuffer
+	move	$t0, $zero
+	
+overrideCicle:
+	beq	$t0, $s0, exitInvert
+	lbu	$t1, ($a3)
+	sb	$t1, ($a2)
+	
+	addi	$a3, $a3, 1
+	addi	$a2, $a2, 1
+	addi	$t0, $t0, 1
+	
+	j	overrideCicle
+
+exitInvert:
+	move	$v1, $a2				# Restituisco in $v0 il buffer di output
+	jr	$ra	
 	
 # fine del programma
 		
