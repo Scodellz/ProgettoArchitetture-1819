@@ -1,13 +1,19 @@
-
+.data
 	buffer: 	.asciiz		"Lorem ipsum"
-	support:		.space		255
+	support:	.space		255
 	space:		.asciiz		"\n"
 
 .align 2
 .text
 
 main:
+	la	$a3, buffer
+	li	$a1, 0
+	jal	C
 	
+	la	$a3, buffer		
+	li	$a1, 0
+	jal	B
 	
 	la	$a3, buffer
 	li	$a1, 0
@@ -16,18 +22,7 @@ main:
 	jal	algD
 	move	$a3, $v1
 	
-	la	$a3, buffer		
-	li	$a1, 0
-	jal	B
-	
-	la	$a3, buffer
-	li	$a1, 0
-	jal	C
-	
-	jal	algD
-	move	$a3, $v1
-	
-	
+
 	li	$v0, 4		# messaggio cifrato
 	#la	$a0, buffer
 	la	$a0, support
@@ -39,23 +34,20 @@ main:
 	
 	jal	algD
 	move	$a3, $v1
-
-	la	$a3, buffer
+	
+	# devo assegnare 
+	# la	$a3, buffer
 	li	$a1, 1
-	jal	C
+	jal	A
 	
-	
-	la	$a3, buffer		
+	#la	$a3, buffer		
 	li	$a1, 1
 	jal	B
 
-		
-	jal	algD
-	move	$a3, $v1
-	
-	la	$a3, buffer
+	#la	$a3, buffer
 	li	$a1, 1
-	jal	A
+	jal	C
+	
 
 	li	$v0, 4
 	la	$a0, buffer
