@@ -6,12 +6,6 @@
 #
 #
 .data 
-# STRINGHE DEDICATE ALLA VISUALIZZAZIONE DEL MENU' PRINCIPALE:
-	welcome: 	.asciiz 	" Benvenuto! scelgli una delle tre opzioni:\n"
-	firstChoice:	.asciiz		" Premi 1 - per cifrare il messaggio.\n "
-	secondChoice:	.asciiz		"premi 2 - per decifrare il messaggio.\n "
-	thirdChoice:	.asciiz		"premi 0 - per terminare il programma.\n "
-	Choice:		.asciiz		"opzione: "
 # STRINGHE DEDICATE PER LA VISUALIZZAZIONE DELLA OPERAZIONE IN CORSO:
 	opCifra:	.asciiz		" cifratura in corso..."
 	opDecif:	.asciiz		" decifratura in corso..."
@@ -43,16 +37,7 @@ main:
 	sw 	$s1, 8($sp)
 	sw 	$s2, 12($sp) 
 
-	jal	initmenuJAT		# chiama la procedura che inizializza la tabella dei salti per il menù
-	move 	$s6, $v0				
-	jal 	menuIniziale		# presentazione del menù iniziale
-	
-	li	$v0, 5			# lettura della scelta effetuata, il numero letto si troverà in $v0
-		syscall		
-		
-	move	$a0, $v0		# passo il parametro letto per eseguire la scelta desiderata
-	jal	calcoloScelta
-	
+
 	j 	exit
 	
 # CASI DEL MENUJAT 					
@@ -71,11 +56,11 @@ cifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
 		j	exit	
 						
 decrifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
-		la	$a0, opDecif	# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto è vuoto, messaggio di err	
+		la	$a0, opDecif	# ci deve essere un controllo sull'operazione di decifraturaaggio,				# perche se il file letto ï¿½ vuoto, messaggio di err	
 		syscall 		# oppure mettere nella discrizione che non sono stati tenuti conti di certi casi 
 		
-					# la prima cosa da fare qui dentro è chiamare una procedura che controlli se il file "messaggioDEcifrato è pieno"
-					# se non lo è stampa una strina di errore e ripropone il menu iniziale 
+					# la prima cosa da fare qui dentro ï¿½ chiamare una procedura che controlli se il file "messaggioDEcifrato ï¿½ pieno"
+					# se non lo ï¿½ stampa una strina di errore e ripropone il menu iniziale 
 
 					# se il controllo viene superato, l'algoritmo diD per invertire la chiave 
 
@@ -85,7 +70,7 @@ decrifratura:	li	$v0, 4		# eseguiamo le procedure di decifraturaaggio
 		
 uscita:		j 	exit		# salta alla sezione di uscita
 
-# ****************************************************************************************************	
+
 
 # PROCEDURA CHE SCORRE IL BUFFERKEY E PER OGNI SIMBOLO CHIAMA UN ALGORITMO DIVERSO
 # PASSANDO GLI OGNI VOLTA BUFFERREADER
@@ -189,12 +174,11 @@ exitCore:
 	addi	$sp, $sp, 4
 	jr	$ra
 	  
-# *****************************************************************************************************
 
 
 # PROCEDURA DEDICATA ALLA LETTURA DELLE CHIAVI SIA IN FASE DI CRIPTAGGIO CHE DECRIPTAGGIO (IN CUI PRIMA DI SCRIVERLA LA DEVE INVERTIRE )
 # 
-# valore di ritorno, il registro del buffer pieno è in $v0
+# valore di ritorno, il registro del buffer pieno ï¿½ in $v0
 leggiChiave:
 	addi 	$sp, $sp, -4
 	sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante 
@@ -212,7 +196,6 @@ leggiChiave:
 	addi	$sp, $sp, 4
 	
 	jr 	$ra	
-# ****************************************************************************************************
 
 
 # 
@@ -235,7 +218,7 @@ leggiMessaggio:
 	
 	jr 	$ra
 
-# ****************************************************************************************************
+
 
 # PROCEDURA CHE PERMETTE DI APRILE UN FILE IN SOLO LETTURA
 # parametri : $a0 <--- descrittore del file 
@@ -247,6 +230,7 @@ openFile:
 	syscall
 	jr $ra
 	
+	
 # PROCEDURA PER LEGGERE IL CONTENUTO DEL FILE
 # parametri	$a0 <- descrittore del file, aperto precedentemente in LETTURA
 #		$a1 <- bufferReader, il riferimento al buffer in cui andra a scrivere il contenuto del file
@@ -257,16 +241,9 @@ readFile:
 	syscall
 	jr $ra
 		
-## PROCEDURA PER VISUALIZZARE IL CONTENUTO DI QUALSIASI BUFFER  ************************ DA TOGLIERE SOLO ALLA FINE 
-# parametri $a0 <- vuole il buffer da visualizzare 
-printContent:
-	li	$v0, 4
-	syscall
-	jr	$ra
-
-
+		
 # PROCEDURA GENERICA CHE SVOLGERA IL CIFRATURA E LA DECIFRATURA DEGLI ALGORITMI A - B - C 
-# : il suo confortamento sarà definito dal settaggio di alcuni flag, da procedure dedicate 
+# : il suo confortamento sarï¿½ definito dal settaggio di alcuni flag, da procedure dedicate 
 #  parametri :
 #	$s0 <--  offset di inizio di scorrimento del buffer
 #	$s1 <--  flag distinzione tra operazione di CRIFRATURA e DECIFRATURA
@@ -303,7 +280,7 @@ exitShifter:
 # ****************************************************************************************************************
 algD:
 	la	$a2, bufferReader		# Metto il buffer di input in $a2
-	la	$a3, supportBuffer		# Carico il buffer che conterrà il messaggio da restituire in $a3
+	la	$a3, supportBuffer		# Carico il buffer che conterrï¿½ il messaggio da restituire in $a3
 	move	$t0, $zero			# Inizializzo contatore degli elementi della stringa a 0
 	
 counterD:					# Metodo che conta quanti elementi sono presenti nel buffer
@@ -321,7 +298,7 @@ endPointer:
 	move	$t0, $zero			# Reinizializzo $t0 per contare il numero di elementi che verranno inseriti
 
 reversal:					# Metodo di inversione				
-	beq	$t0, $s0, override		# Se il numero dei caratteri inseriti è pari alla lunghezza del buffer
+	beq	$t0, $s0, override		# Se il numero dei caratteri inseriti ï¿½ pari alla lunghezza del buffer
 						# allora posso uscire dalla procedura	
 	lbu	$t1, ($a2)			# Altrimenti metto in $t1 l'elemento del buffer di input
 	sb	$t1, ($a3)			# e lo salvo nel buffer di uscita
@@ -352,46 +329,6 @@ exitInvert:
 	move	$v0, $a2				# Restituisco in $v0 il buffer di output
 	jr	$ra
 	
-# **************************************************************************************************************** #
-	
-# procedura che calcola la posizione in cui saltare nella menuJAT  
-calcoloScelta:	
-	slt	$t1, $a0, $zero		# confronta se la scleta insierita e' < = 0
-	bne	$t1, $zero, exit
-	slti	$t1, $v0, 3		# controllo che la scelta sia < =3
-	beq 	$t1, $zero, exit
-	li	$t2, 4			# costante di default per il calcolo dell'indirizzo in cui saltare
-	mult	$t2, $a0		# moltiplico la costante per la scelta 
-	mflo	$t3			# riprendo il risultato dal regristro dedicato alla moltiplicazione																							
-	lw	$t0, menuJAT($t3)	# carico la posizione richiesta 																			
-	jr	$t0			# viene eseguito il salto alla posizione richiesta
-	
-# ***** PROCEDURA CHE INIZIALIZZA GLI INDIRIZZI DI SALTO DEDICATI AL MENU PRINCIPALE 
-# il registro di riferimento per la tabella dei salti è $v0 
-initmenuJAT:	la	$t4, menuJAT			
-		la	$t5, uscita
-		sw	$t5, 0($t4)		# carico il caso dell'uscita nella posizione zero			
-		la	$t5, cifratura
-		sw	$t5, 4($t4)		# carica le chiamate alle procedure di cifraturaaggio in prima posizione 
-		la	$t5, decrifratura
-		sw	$t5, 8($t4)		# carica le chiamate alle procedure di decifraturaaggio in seconda posizione
-		
-		move	$v0, $t4		# salvo l'indirzzo della menuJAT in $v0
-		jr	$ra
-
-# ***** PROCEDURA CHE STAMPA IL MENU' DI SCELTA PRINCIPALE ***** #
-menuIniziale:	li	$v0, 4				
-		la	$a0, welcome			 
-		syscall					 			
-		la	$a0, firstChoice		
-		syscall 						
-		la	$a0, secondChoice		
-		syscall 								
-		la	$a0, thirdChoice			
-		syscall
-		la	$a0, Choice
-		syscall 
-		jr	$ra	
 
 # ********************************************************
 # fine del programma
