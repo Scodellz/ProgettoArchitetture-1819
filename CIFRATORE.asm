@@ -77,7 +77,6 @@ cifratura:	addi	$sp, $sp,-4		# salvo il registro $ra corrente per potere tornare
 		syscall 
 		
 		move	$a0, $t0		# ripristino il valore fornito dal chiamante
-		
 		jal	Core			# chiamata all'operazione core
 		
 		lw	$ra, 0($sp)		# reimposto il registro $ra iniziale per potere tornare
