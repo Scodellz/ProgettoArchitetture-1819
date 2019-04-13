@@ -28,64 +28,84 @@
 .globl main
 
 main:	
-		addi	$sp, $sp,-16				# alloco lo spazio per una word nello stack
-		sw	$ra, 0($sp)				# salvo nello stack l'indirizzo di ritorno del chiamante
+		addi	$sp, $sp,-16			# alloco lo spazio per una word nello stack
+		sw	$ra, 0($sp)			# salvo nello stack l'indirizzo di ritorno del chiamante
 		sw 	$s0, 4($sp)
 		sw 	$s1, 8($sp)
 		sw 	$s2, 12($sp) 
+		
+		li	$s7, 0				# inizializo $s7 per usarla come VARIABILE DI STATO
+		
+		la	$a0, messaggio			# carico il descrittore del file da cifrare
+		jal	readMessage			# procedura dedicata a caricare il messaggio da 
+		
+		# move 	$s7,$v0				# salvo temporaneamente il valore di "readMessage"
+		
+		la	$a0, chiave			# carico il descrittore del file
+		jal	readKey				# procedura dedicata alla lettura della chiave
+		
+		move	$a0, $v0			# passo come parametro il registro di partenza di "bufferkey" 
+		# move	$a1, $s7			# passo come parametro il registro di partenze di "bufferReader"
+		jal	cifratura			# chiamo la procedura di CIFRATURA 
 	
-		jal	cifratura
-	
-		li	$v0, 4
+		li	$v0, 4				# DA ELIMINARE
 		la	$a0, bufferReader
 		syscall
-	
+		
+		# addi	$s7, $s7, 1
+		
+		# CHIAMA INVERTER PER INVERTIRE LA CHIAVE E METTERLA SU BUFFERKEY
+		
+		# CHIAMA READFILE SU MESSAGGIOCIFRATO E METTERLO SU BUFFERREADER
+		
 		#jal 	decrifratura	
 		
 		j 	exit
 	
-# MAIN PROCEDURES					
-cifratura:	addi	$sp, $sp,-4			# salvo il registro $ra corrente per potere tornare 
-		sw	$ra, 0($sp)			# al main a fine alla fine della procedura
+# MAIN PROCEDURES :VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+#
+#
+#					
+cifratura:	addi	$sp, $sp,-4		# salvo il registro $ra corrente per potere tornare 
+		sw	$ra, 0($sp)		# al main a fine alla fine della procedura
+		
+		move	$t0, $a0		# salvo momentaneamente il valore di $a0, per potere notificare 
+						# l'operazione che sta per essere eseguita	
 
-		li	$v0, 4				# messaggio indicativo per indicare la procedura in corso 
+		li	$v0, 4			# messaggio indicativo per indicare la procedura in corso 
 		la	$a0, opCifra			
 		syscall 
 		
-		la	$a0, messaggio			# carico il descrittore del file
-		jal	readMessage			# procedura dedicata alla lettura del messaggio 
-		move 	$s7,$v0				# sposto il registro di riferimento che contiene il messaggio appena letto
-	
-		la	$a0, chiave			# carico il descrittore del file
-		jal	readKey				# procedura dedicata alla lettura della chiave
-		move	$a0, $v0			# passo come parametro il registro al bufferkey 
+		move	$a0, $t0		# ripristino il valore fornito dal chiamante
 		
-		move	$a1, $s7			# passo come parametro il registro al bufferReader
-		jal	Core			
+		jal	Core			# chiamata all'operazione core
 		
-		lw	$ra, 0($sp)			# reimposto il registro $ra iniziale per potere tornare
-		addi	$sp, $sp, 4			# al main 
+		lw	$ra, 0($sp)		# reimposto il registro $ra iniziale per potere tornare
+		addi	$sp, $sp, 4		# al main 
 		jr	$ra
 		
 										
-decrifratura:	addi	$sp, $sp,-4			# salvo il registro $ra corrente per potere tornare 
-		sw	$ra, 0($sp)			# al main a fine alla fine della procedura
+decrifratura:	addi	$sp, $sp,-4		# salvo il registro $ra corrente per potere tornare 
+		sw	$ra, 0($sp)		# al main a fine alla fine della procedura
 
-		li	$v0, 4				# messaggio indicativo per indicare la procedura in corso 
+		li	$v0, 4			# messaggio indicativo per indicare la procedura in corso 
 		la	$a0, opDecif						
 		syscall 			 
 		 
 		
 	
-		lw	$ra, 0($sp)			# reimposto il registro $ra iniziale per potere tornare	
-		addi	$sp, $sp, 4			# al main 
+		lw	$ra, 0($sp)		# reimposto il registro $ra iniziale per potere tornare	
+		addi	$sp, $sp, 4		# al main 
 		jr	$ra
 		
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+				
 		
 # PROCEDURA CHE SCORRE IL BUFFERKEY E PER OGNI SIMBOLO CHIAMA UN ALGORITMO DIVERSO
 # PASSANDO GLI OGNI VOLTA BUFFERREADER
 # parametri: 		 $a0<--- prende il riferimento a keyBuffer
-# 	    		 $a1<--- deve avere il buffer reader	DA AGGIUNGERE 
+# 	    		 $a1<--- deve avere il buffer reader				DA AGGIUNGERE 
 #
 # VALORE DI RITORNO : 	VOID
 
@@ -96,7 +116,7 @@ decrifratura:	addi	$sp, $sp,-4			# salvo il registro $ra corrente per potere tor
 Core:		addi 	$sp, $sp, -4			# salvo il rigistro di ritorno del chiamante
 		sw   	$ra, 0($sp)			# usando lo stack
 	
-nextAlg:	lb	$t0, ($a0)			# carico il primo carattere della chiave e
+nextAlg:	lb	$t0, ($a0)			# carico il primo carattere della CHIAVE e
 		beqz	$t0, exitCore			# controllo se sono arrivato a fine stringa.
 		li	$t1, 65				# I varia algoritmi da chiamare vengono riconosciuti   
 		sub	$t0, $t0, $t1			# atraverso una operazione di sottrazione  
@@ -109,31 +129,24 @@ nextAlg:	lb	$t0, ($a0)			# carico il primo carattere della chiave e
 		beq	$t0, 3, algorithm_D
 		beq	$t0, 4, algorithm_E
 
+
 algorithm_A:						# chiama Shifter
 		addi 	$sp, $sp, -4
-		sw   	$a0, 0($sp)
+		sw   	$a0, 0($sp)			# salvo l'indirezzo di partenza della chiave
 	
-		# questa parte va generalizzata
-		la	$a3, bufferReader
-		li	$s0, 0			
-		li	$s1, 0		# questo va letto dell'esterno:  0 - criptazioneta | 1- decifra
-		li	$s2, 1
+		jal	algAStatus			# procedura dedicata al settaggio dei flag
 		jal	shifter
 	
 		lw	$a0, 0($sp)
 		addi	$sp, $sp, 4
-	
 		j	goNext
+
 	
 algorithm_B:						# chiama Shifter
 		addi 	$sp, $sp, -4
 		sw   	$a0, 0($sp)
 	
-		# questa parte va generalizzata
-		la	$a3,bufferReader
-		li	$s0, 0
-		li	$s1, 0		# questo va letto dell'esterno:  0 - criptazioneta | 1- decifra
-		li	$s2, 2
+		jal	algBStatus
 		jal	shifter
 	
 		lw	$a0, 0($sp)
@@ -145,11 +158,8 @@ algorithm_C:						# chiama Shifter
 		addi 	$sp, $sp, -4
 		sw   	$a0, 0($sp)
 	
-		# questa parte va generalizzata
-		la	$a3, bufferReader
-		li	$s0, 1
-		li	$s1, 0		# questo va letto dall'esterno:  0 - criptazioneta | 1- decifra
-		li	$s2, 2
+
+		jal	algCStatus
 		jal	shifter
 	
 		lw	$a0, 0($sp)
@@ -183,8 +193,47 @@ goNext:		addi	$a0, $a0, 1			# aggiorna il registro di 1 per chiamare
 exitCore:	lw	$ra, 0($sp)			# reimposto il registro $ra iniziale per potere tornare	
 		addi	$sp, $sp, 4
 		jr	$ra
-	
-	
+		
+		
+# ALGORITMO A- STATUS:  PROCEDURA DEDICATA AL SETTAGGIO DEI FLAG DEDICATI ALL'ALGORITMO A 		
+algAStatus:	la	$a3, bufferReader
+		li	$s0, 0
+		li	$s2, 1
+		
+		beqz 	$s7, CifraturaA
+		li	$s1, 1			
+		j	DecifraturaA
+
+CifraturaA:	li	$s1, 0	
+
+DecifraturaA:	jr $ra
+
+# ALGORITMO B- STATUS:  PROCEDURA DEDICATA AL SETTAGGIO DEI FLAG DEDICATI ALL'ALGORITMO B 		
+algBStatus:	la	$a3, bufferReader
+		li	$s0, 0
+		li	$s2, 2
+		
+		beqz 	$s7, CifraturaB
+		li	$s1, 1			
+		j	DecifraturaB
+
+CifraturaB:	li	$s1, 0	
+
+DecifraturaB:	jr $ra
+
+# ALGORITMO C- STATUS:  PROCEDURA DEDICATA AL SETTAGGIO DEI FLAG DEDICATI ALL'ALGORITMO C		
+algCStatus:	la	$a3, bufferReader
+		li	$s0, 1
+		li	$s2, 2
+		
+		beqz 	$s7, CifraturaC
+		li	$s1, 1			
+		j	DecifraturaC
+
+CifraturaC:	li	$s1, 0	
+
+DecifraturaC:	jr $ra
+
 # READ-MESSAGE - PROCEDURA DEDICATA ALLA LETTURA DEL FILE DI TESTO DA CRIFRARE O DECIFRARE 
 # PARAMETRI : 		$a0<--DESCRITTORE DEL FILE 
 #
