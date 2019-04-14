@@ -1,11 +1,10 @@
 riferito a masterVersion2 ABC
 
- Questa descrizione ad alto livello si focalizza nel presentare le strutture fondamentali utilizzate
-  dal Cifratore.
-
- Il programma è stato sviluppato in modo da rispettare i principi della Modularita delle Procedure è stato favorito
- il principio della "Generalità" per garantire la riusabilita delle procedure grazie al basso accopiamento tra di esse.
- e avere un codice più "facilmente" mantenibile, grazie suddivisione delle funzionalità in tante piccole procedure.
+ Questa descrizione ad alto livello si focalizza nel presentare le strutture fondamentali utilizzate dal Cifratore.
+ Il programma è stato sviluppato in modo da rispettare i principi della Modularita delle Procedure.
+ Per ciò è stata favorita la "Generalità singola responsabilita" per garantire la riusabilita delle procedure
+ grazie al basso accopiamento tra di esse ed avere un codice più "facilmente" mantenibile,
+ grazie suddivisione delle funzionalità in tante piccole procedure.
 
 
   CIFRATORE:
@@ -17,32 +16,33 @@ riferito a masterVersion2 ABC
   cifratura(bufferReader bufferkey):
   decifratura(bufferReader bufferkey):
 
-Il compito del Cifratore ha il compito di leggere i file di testo interessati e di caricarli negli appositi buffer,
-nella seconda fase invece prima di avviare la la procedura di decifratura, chiamera l'algoritmo D per invertire la chiave corrente
-e caricarla nel buffer dedicato alla chiave.
+Il Cifratore nella prima fase il compito di leggere i file di testo interessati e di caricarli negli appositi buffer,
+nella seconda fase chiamera l'algoritmo D per invertire la chiave corrente e caricarla nel buffer dedicato alla chiave.
 Leggerà il file da decifrare e lo caricherà in bufferReader, avvierà soltanto dopo la procedura di decifratura.
-Nell'ultima parte di ogni fase, il cifratore ha il compito di chiamare le procedure di scrittura su i file dedicati.
 
-
-Entrambe le procedure faranno riferimento all'array bufferReader dove all'inizio del programma sarà salvato il testo da cifrare  e
-** sarà utilizzato dagli algoritmi di cifratua ABCDE per salvare le cifrature parziali nel corso della computazione.**
-
+Alla fine di ogni fase il Cifratore ha il compito di scrivere nei file di uscita dedicati, chiamando le procedure apposta.
+dedicate
 
 CIFRATURA E DECIFRATURA:
 
-CIFRATURA   DECIFRATURA
-VAR1 :      VAR1:
-VAR2 :      VAR2:
+CIFRATURA    DECIFRATURA
 
-CORE()      CORE()
-
+algAstatus() algAstatus()
+algBstatus() algBstatus()
+algCstatus() algCstatus()
+algDstatus() algDstatus()
+algEstatus() algEstatus()
+CORE()       CORE()
 
 Il loro compito è quello di chiamare opportune procedura dei Setters() che hanno il compito di impostare dei flag.
 questi flag avranno effetto sul comportamento di Core, che è la procedura che eseguirà l'effettiva operazione di
-cifratura o decifratura
+cifratura o decifratura.
+
+bufferReader è l'array di riferimento per entrambe le operazioni, all'inizio del programma conterrà il messaggio in chiaro
+durante lo svolgimento dei vari algoritmi di cifratura coterra le cifrature parziali dei vari algoritmi e alla fine
+conterrà il messaggio cifrato da scrivere nel file di output.
+
 **Aumentare piu descrizione se necessario **
-
-
 
 CORE
 VAR1:
@@ -53,8 +53,8 @@ CALL-C()
 CALL-D()
 CALL-E()
 
+è la procedura generica alla base del funzionamento dell'intero Cifratore,
+sarà utilizzato sia in fase di cifratura che in fase di decifratura.
 
-è la procedura generica alla base del funzionamento dell'intero cifratore sarà utilizzato sia in fase di cifratura che
-in fase di decifratura. Core riceverà bufferReader e bufferkey e chiamera su bufferReader un algoritmo di cifratura
-per ogni simbolo trovato all'interno di bufferkey. La procedura di cifratura o decifratura finirà quando è stato letto
-ogni singolo carattere all'interno di bufferkey.
+Core riceverà bufferkey e chiamera su bufferReader un algoritmo di cifratura per ogni simbolo trovato all'interno di bufferkey.
+La procedura di cifratura o decifratura finirà quando è stato letto ogni singolo carattere all'interno di bufferkey.
