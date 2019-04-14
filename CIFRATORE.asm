@@ -22,6 +22,7 @@
 		bufferKey:	.space	   	 5	
 # BUFFER DECICATI AL SUPPORTO DELLE PROCEDURE:
 		supportBuffer: 	.space		255
+		statusBuffer:	.byte 
 .align 2
 
 .text
@@ -38,17 +39,16 @@ main:
 		
 		la	$a0, messaggio			# carico il descrittore del file da cifrare
 		jal	readMessage			# procedura dedicata a caricare il messaggio da 
-		
 		# move 	$s7,$v0				# salvo temporaneamente il valore di "readMessage"
 		
 		la	$a0, chiave			# carico il descrittore del file
 		jal	readKey				# procedura dedicata alla lettura della chiave
 		
 		move	$a0, $v0			# passo come parametro il registro di partenza di "bufferkey" 
-		# move	$a1, $s7			# passo come parametro il registro di partenze di "bufferReader"
+	
 		jal	cifratura			# chiamo la procedura di CIFRATURA 
 	
-		li	$v0, 4				# DA ELIMINARE
+		li	$v0, 4				# DA ELIMINARE al suo posto deve essereci la procedura che scrive in uscita
 		la	$a0, bufferReader
 		syscall
 		
