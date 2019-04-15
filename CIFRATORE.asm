@@ -22,7 +22,7 @@
 		bufferKey:	.space	   	 5	
 # BUFFER DECICATI AL SUPPORTO DELLE PROCEDURE:
 		supportBuffer: 	.space		255
-		statusBuffer:	.byte 
+		statusABC:	.space		36
 .align 2
 
 .text
@@ -39,7 +39,7 @@ main:
 		
 		la	$a0, messaggio			# carico il descrittore del file da cifrare
 		jal	readMessage			# procedura dedicata a caricare il messaggio da 
-		# move 	$s7,$v0				# salvo temporaneamente il valore di "readMessage"
+	
 		
 		la	$a0, chiave			# carico il descrittore del file
 		jal	readKey				# procedura dedicata alla lettura della chiave
@@ -48,9 +48,9 @@ main:
 	
 		jal	cifratura			# chiamo la procedura di CIFRATURA 
 	
-		li	$v0, 4				# DA ELIMINARE al suo posto deve essereci la procedura che scrive in uscita
-		la	$a0, bufferReader
-		syscall
+		li	$v0, 4				# DA ELIMINARE al suo posto deve 
+		la	$a0, bufferReader		# essereci la procedura che scrive 
+		syscall					# in un file di  uscita
 		
 		# addi	$s7, $s7, 1
 		
@@ -58,7 +58,9 @@ main:
 		
 		# CHIAMA READFILE SU MESSAGGIOCIFRATO E METTERLO SU BUFFERREADER
 		
-		#jal 	decrifratura	
+		#jal 	decrifratura
+		
+		# chiama la procedura per scrivere in un file di uscita		
 		
 		j 	exit
 	
@@ -76,6 +78,30 @@ cifratura:	addi	$sp, $sp,-4		# salvo il registro $ra corrente per potere tornare
 		la	$a0, opCifra			
 		syscall 
 		
+		la 	$a0, statusABC
+	  	jal 	setStatusABC
+	  	
+	  		  jal 	setStatusABC	    
+	  move $t9, $v0 		# sposto il valore di ritorno   
+	  
+	  move $t8, $v0 		# sposto il valore di ritorno  
+	  
+	  li	$t1, 1			# per fermare la stampa  visualizzare lo stato corrente
+loop:	  lb	$t0, 0($t9)		#
+	  beq	$t1, 10, exit		#
+	  				#
+	  li 	$v0, 1			#
+	  move	$a0, $t0		#
+	  syscall			#
+	  				#
+	  addi 	$t9, $t9, 4		#
+	  add	$t1, $t1, 1		#
+	  				#
+	  j loop			#
+	  
+
+	  		    
+	  	move 	$a1, $v0 		# passo come parametro l'indirizzo di ritorno all'array degli stati
 		move	$a0, $t0		# ripristino il valore fornito dal chiamante
 		jal	Core			# chiamata all'operazione core
 		
@@ -91,6 +117,8 @@ decrifratura:	addi	$sp, $sp,-4		# salvo il registro $ra corrente per potere torn
 		la	$a0, opDecif						
 		syscall 			 
 		 
+		# avvia l'array degli stati aggiornati per ABC
+		
 		
 	
 		lw	$ra, 0($sp)		# reimposto il registro $ra iniziale per potere tornare	
@@ -130,14 +158,16 @@ nextAlg:	lb	$t0, ($a0)			# carico il primo carattere della CHIAVE e
 
 
 algorithm_A:						# chiama Shifter
-		addi 	$sp, $sp, -4
+		addi 	$sp, $sp, -8
 		sw   	$a0, 0($sp)			# salvo l'indirezzo di partenza della chiave
-	
-		jal	algAStatus			# procedura dedicata al settaggio dei flag
+		sw	$a1, 4($sp)
+		
+		
 		jal	shifter
 	
+		lw	$a1, 4($sp)
 		lw	$a0, 0($sp)
-		addi	$sp, $sp, 4
+		addi	$sp, $sp, 8
 		j	goNext
 
 	
@@ -145,7 +175,7 @@ algorithm_B:						# chiama Shifter
 		addi 	$sp, $sp, -4
 		sw   	$a0, 0($sp)
 	
-		jal	algBStatus
+		
 		jal	shifter
 	
 		lw	$a0, 0($sp)
@@ -158,7 +188,7 @@ algorithm_C:						# chiama Shifter
 		sw   	$a0, 0($sp)
 	
 
-		jal	algCStatus
+		
 		jal	shifter
 	
 		lw	$a0, 0($sp)
@@ -193,45 +223,98 @@ exitCore:	lw	$ra, 0($sp)			# reimposto il registro $ra iniziale per potere torna
 		addi	$sp, $sp, 4
 		jr	$ra
 		
+# setStatusABC setta l'array degli stati dedicati alle procedure ABC
+# ofsetper leggere lo stato : 0 è A , 12 è B,  24 è C
+# 	
+
+setStatusABC:	addi 	$sp, $sp, -4
+		sw 	$ra, 0($sp)
+	
+		move $t9, $a0
+	
+		jal algAStatus
+	
+		addi $a0, $a0, 12
+		jal algBStatus
+	
+		addi $a0, $a0, 12
+		jal algCStatus
+	
+		move $v0, $t9
+	
+		lw	$ra, 0($sp)
+		addi	$sp, $sp, 4	
+		jr 	$ra		
+		
+		
+		
+		
 		
 # ALGORITMO A- STATUS:  PROCEDURA DEDICATA AL SETTAGGIO DEI FLAG DEDICATI ALL'ALGORITMO A 		
-algAStatus:	la	$a3, bufferReader
+algAStatus:	addi 	$sp, $sp, -4
+		sw 	$ra, 0($sp)
+
+		move	$t1, $a0 # sposto il riferimento al buffer degli stati per poterlo trattare meglio
 		li	$s0, 0
 		li	$s2, 1
+		sb	$s0, 0($t1)	# carico l'indirizzo di partenza $s0
+		sb	$s2, 8($t1)	# carico il passo di lettura $s2
 		
 		beqz 	$s7, CifraturaA
-		li	$s1, 1			
+		li	$s1, 1
+		sb	$s1, 4($t1)	# carico $s1 che specifica l'operazione da eseguire		
 		j	DecifraturaA
 
-CifraturaA:	li	$s1, 0	
+CifraturaA:	li	$s1, 0
+		sb	$s1, 4($t1)	# carico $s1 che specifica l'operazione da eseguire
 
-DecifraturaA:	jr $ra
+DecifraturaA:	lw	$ra, 0($sp)
+		addi	$sp, $sp, 4
+		jr $ra
 
-# ALGORITMO B- STATUS:  PROCEDURA DEDICATA AL SETTAGGIO DEI FLAG DEDICATI ALL'ALGORITMO B 		
-algBStatus:	la	$a3, bufferReader
+# ALGORITMO B- STATUS:  PROCEDURA DEDICATA AL SETTAGGIO DEI FLAG DEDICATI ALL'ALGORITMO B 				
+algBStatus:	addi 	$sp, $sp, -4
+		sw 	$ra, 0($sp)
+		
+		move	$t1, $a0
 		li	$s0, 0
 		li	$s2, 2
+		sb	$s0, 0($t1)	# carico l'indirizzo di partenza $s0
+		sb	$s2, 8($t1)	# carico il passo di lettura $s2
 		
 		beqz 	$s7, CifraturaB
-		li	$s1, 1			
+		li	$s1, 1
+		sb	$s1, 4($t1)	# carico $s1 che specifica l'operazione da eseguire			
 		j	DecifraturaB
 
-CifraturaB:	li	$s1, 0	
+CifraturaB:	li	$s1, 0
+		sb	$s1, 4($t1)
 
-DecifraturaB:	jr $ra
+DecifraturaB:	lw	$ra, 0($sp)
+		addi	$sp, $sp, 4
+		jr 	$ra
 
 # ALGORITMO C- STATUS:  PROCEDURA DEDICATA AL SETTAGGIO DEI FLAG DEDICATI ALL'ALGORITMO C		
-algCStatus:	la	$a3, bufferReader
+algCStatus:	addi 	$sp, $sp, -4
+		sw 	$ra, 0($sp)
+		
+		move	$t1, $a0
 		li	$s0, 1
 		li	$s2, 2
+		sb	$s0, 0($t1)	# carico l'indirizzo di partenza $s0
+		sb	$s2, 8($t1)	# carico il passo di lettura $s2
 		
 		beqz 	$s7, CifraturaC
-		li	$s1, 1			
+		li	$s1, 1
+		sb	$s1, 4($t1)	# carico $s1 che specifica l'operazione da eseguire				
 		j	DecifraturaC
 
 CifraturaC:	li	$s1, 0	
-
-DecifraturaC:	jr $ra
+		sb	$s1, 4($t1)
+		
+DecifraturaC:	lw	$ra, 0($sp)
+		addi	$sp, $sp, 4
+		jr 	$ra
 
 # READ-MESSAGE - PROCEDURA DEDICATA ALLA LETTURA DEL FILE DI TESTO DA CRIFRARE O DECIFRARE 
 # PARAMETRI : 		$a0<--DESCRITTORE DEL FILE 
@@ -308,29 +391,35 @@ readFile:
 #			$s2 <--	 offset dedicato al passo di scorrimento del buffer
 #
 # VALORE DI RITORNO:	VOID
-shifter:	add	$a3, $a3, $s0 		# definiamo l'indice di partenza	
-							
-convertitore:	lb	$t0, ($a3) 		# $t0 carichiamo la lettera da cifrare
-		beqz	$t0, uscitaShifter	# controlliamo di non essere arrivati alla fine 
-		li	$t1, 255		# definiamo il valore del modulo 
-		li	$t2, 4			# costante di cifratura		
-		move	$t3, $s1		# flag di operazione
+
+shifter:	
+		la	$a3, bufferReader	# salvo il puntatore al buffer CARICA QUI IL RIFERIMENTO AL BUFFER DEGLI STATI
+		move	$s6, $a0	# sposto il riferimento al buffer degli stati 
+		lb	$s0, 0($s6) 	
+		add	$a3, $a3, $s0 	# definiamo l'indice di partenza $s0	
+								
+convertitore:	lb	$t0, ($a3) 	# $t0 carichiamo la lettera da cifrare
+		beqz    $t0, uscitaShifter	# controlliamo di non essere arrivati alla fine 
+		li	$t1, 255	# definiamo il valore del modulo 
+		li	$t2, 4		# costante di cifratura	
+		lb	$t3, 4($s6)	# carico il flag di operazione		$s1
 	
-decriptazione:	beqz	$t3, criptazione	# OPERAZIONE DI DECIFRATURA	 
-		li 	$t4, -1			# *********************************************AGGIUNGERE CONTROLLO SUI NEGATIVI   
-		mult	$t2, $t4		#
+decriptazione:	beqz	$t3, criptazione	# operazione di decifratura 	 
+		li 	$t4, -1		# AGGIUNGERE CONTROLLO SUI NEGATIVI   
+		mult	$t2, $t4	#
 		mflo	$t2		
 	
-criptazione:	add	$t0, $t0, $t2		# OPERAZIONE DI CIFRATURA			
-		div	$t0, $t1		#
-		mfhi	$t0  		 	#	
-		sb	$t0, 0($a3)		# salvo il nuovo contenuto da stampare sullo stesso buffer !!!
+criptazione:	add	$t0, $t0, $t2	# operazione di cifratura			
+		div	$t0, $t1
+		mfhi	$t0  		 		
+		sb	$t0, 0($a3)	# salvo il nuovo contenuto da stampare sullo stesso buffer !!!
 	
-						#  
-		add	$a3, $a3,$s2		# somma del passo di scorrimento
-		j 	convertitore	
-	
-uscitaShifter:	jr	$ra 
+		lb	$s2, 8($s6)	# carico il passo   
+		add	$a3, $a3,$s2	# definito in $s2	
+		j 	convertitore
+		
+uscitaShifter:	move 	$v0, $a3
+		jr	$ra
 
 			
 # PROCEDURA GENERICA DEDICATA ALL'INVERSIONE DI QUALCUASI STRINGA SIA DATA IN PASTO 
