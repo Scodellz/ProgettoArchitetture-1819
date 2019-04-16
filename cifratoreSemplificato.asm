@@ -41,14 +41,31 @@ main:
 		sw 	$s1, 8($sp)
 		sw 	$s2, 12($sp) 
 		
-		li	$s7, 0			# inizializo $s7 per usarla come VARIABILE DI STATO
-		
-		la	$a0, messaggio 
-		jal	readMessage
+
+		la	$a0, messaggio 		# la chiamata a queste procedure mi permettono di caricare
+		jal	readMessage		# i buffer interessati
 		
 		la	$a0,chiave
-		jal	readKey			#  queste chiamate mi permettono di riempire i buffer dedicati, 			
-						# posso riprenderli direttamente dalle procedure
+		jal	readKey			
+			
+		li	$s7, 0			# inizializo $s7 per usarla come VARIABILE DI STATO							
+		
+		# jal	cifratura		# chiamo la procedura di CIFRATURA 
+	
+		li	$v0, 4			# DA ELIMINARE sostituire con la procedura scrittura su file
+		la	$a0, bufferReader
+		syscall
+		
+		# addi	$s7, $s7, 1
+		
+		# CHIAMA INVERTER PER INVERTIRE LA CHIAVE E METTERLA SU BUFFERKEY
+		
+		# CHIAMA READFILE SU MESSAGGIOCIFRATO E METTERLO SU BUFFERREADER
+		
+		#jal 	decrifratura	
+		
+		j 	exit
+				
 		
 	
 		
