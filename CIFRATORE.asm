@@ -38,14 +38,12 @@ main:
 		li	$s7, 0				# inizializo $s7 per usarla come VARIABILE DI STATO
 		
 		la	$a0, messaggio			# carico il descrittore del file da cifrare
-		jal	readMessage			# procedura dedicata a caricare il messaggio da 
-	
-		
+		jal	readMessage			# procedura dedicata a caricare il messaggio da cifrare o decifrare
+					
 		la	$a0, chiave			# carico il descrittore del file
 		jal	readKey				# procedura dedicata alla lettura della chiave
 		
 		move	$a0, $v0			# passo come parametro il registro di partenza di "bufferkey" 
-	
 		jal	cifratura			# chiamo la procedura di CIFRATURA 
 	
 		li	$v0, 4				# DA ELIMINARE al suo posto deve 
@@ -81,26 +79,23 @@ cifratura:	addi	$sp, $sp,-4		# salvo il registro $ra corrente per potere tornare
 		la 	$a0, statusABC
 	  	jal 	setStatusABC
 	  	
-	  		  jal 	setStatusABC	    
-	  move $t9, $v0 		# sposto il valore di ritorno   
-	  
-	  move $t8, $v0 		# sposto il valore di ritorno  
-	  
-	  li	$t1, 1			# per fermare la stampa  visualizzare lo stato corrente
-loop:	  lb	$t0, 0($t9)		#
-	  beq	$t1, 10, exit		#
-	  				#
-	  li 	$v0, 1			#
-	  move	$a0, $t0		#
-	  syscall			#
-	  				#
-	  addi 	$t9, $t9, 4		#
-	  add	$t1, $t1, 1		#
-	  				#
-	  j loop			#
-	  
-
 	  		    
+	  	move $t9, $v0 			# sposto il valore di ritorno   
+	  	move $t8, $v0	 		# sposto il valore di ritorno  
+	  
+	  	li	$t1, 1			# per fermare la stampa  visualizzare lo stato corrente
+loop:	  	lb	$t0, 0($t9)		#
+	  	beq	$t1, 10, exit		#
+	  				
+	  	li 	$v0, 1			#
+	  	move	$a0, $t0		#
+	  	syscall			
+	  				
+	  	addi 	$t9, $t9, 4		#
+	  	add	$t1, $t1, 1		#
+	  				
+	  	j loop			
+	  
 	  	move 	$a1, $v0 		# passo come parametro l'indirizzo di ritorno all'array degli stati
 		move	$a0, $t0		# ripristino il valore fornito dal chiamante
 		jal	Core			# chiamata all'operazione core
@@ -318,8 +313,7 @@ DecifraturaC:	lw	$ra, 0($sp)
 
 # READ-MESSAGE - PROCEDURA DEDICATA ALLA LETTURA DEL FILE DI TESTO DA CRIFRARE O DECIFRARE 
 # PARAMETRI : 		$a0<--DESCRITTORE DEL FILE 
-#
-# VALORE DI RITORNO :	$v0<--REGISTRO DEL BUFFER CON I DATI LETTI 
+# VALORE DI RITORNO :	void , carica bufferReader con i valori da cifrare o decifrare
 readMessage:	addi 	$sp, $sp, -4
 		sw   	$ra, 0($sp)		# salvo il rigistro di ritorno del chiamante 
 		
@@ -330,8 +324,6 @@ readMessage:	addi 	$sp, $sp, -4
 		li	$a2, 255		# dimensione del buffer
 		jal	readFile		# leggo il file e carico il buffer dedicato
 		
-		move	$v0, $a1		# sposto il valore di ritorno nel registro dedicato
-	
 		lw	$ra, 0($sp)		# reimposto il registro del chiamante
 		addi	$sp, $sp, 4
 		jr 	$ra
@@ -394,9 +386,9 @@ readFile:
 
 shifter:	
 		la	$a3, bufferReader	# salvo il puntatore al buffer CARICA QUI IL RIFERIMENTO AL BUFFER DEGLI STATI
-		move	$s6, $a0	# sposto il riferimento al buffer degli stati 
+		move	$s6, $a0		# sposto il riferimento al buffer degli stati 
 		lb	$s0, 0($s6) 	
-		add	$a3, $a3, $s0 	# definiamo l'indice di partenza $s0	
+		add	$a3, $a3, $s0 		# definiamo l'indice di partenza $s0	
 								
 convertitore:	lb	$t0, ($a3) 	# $t0 carichiamo la lettera da cifrare
 		beqz    $t0, uscitaShifter	# controlliamo di non essere arrivati alla fine 
