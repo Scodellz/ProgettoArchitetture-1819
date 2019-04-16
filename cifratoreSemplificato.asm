@@ -4,13 +4,6 @@
 # 
 # DATA DI CONSEGNA: 
 #
-# GRUPPO DI LAVORO :
-# DUCCIO SERAFINI			E-MAIL: duccio.serafini@stud.unifi.it
-# ANDRE CRISTHIAN BARRETO DONAYRE	E-MAIL: andre.barreto@stud.unifi.it
-# 
-# DATA DI CONSEGNA: 
-#
-#
 .data 
 # STRINGHE DEDICATE PER LA VISUALIZZAZIONE DELLA OPERAZIONE IN CORSO:
 		opCifra:	.asciiz		" Cifratura in corso...\n"
@@ -20,8 +13,8 @@
 		messaggio:	.asciiz		".marSETUP/messaggio.txt"
 		chiave:		.asciiz 	".marSETUP/chiave.txt"
 # DESCRITTORI DEI FILE IN USCITA: 
-
-
+						# messaggioCifrato	
+						# messaggioDecifrato
 .align 2
 # BUFFER DEDICATI ALLA LETTURA DEI DATI DEI FILE IN INPUT:
 		bufferReader:	.space	    	255
@@ -29,6 +22,8 @@
 # BUFFER DECICATI AL SUPPORTO DELLE PROCEDURE:
 		supportBuffer: 	.space		255
 		statusABC:	.space		36
+		supportInvert: 	.space		5		# qtspim rompe il cazzo, va riguardo ma in generale torna	
+		space:		.asciiz 	"\n"
 .align 2
 
 .text
@@ -52,27 +47,118 @@ main:
 		
 		# jal	cifratura		# chiamo la procedura di CIFRATURA 
 	
-		li	$v0, 4			# DA ELIMINARE sostituire con la procedura scrittura su file
+		li	$v0, 4			
 		la	$a0, bufferReader
 		syscall
 		
-		# addi	$s7, $s7, 1
+		# addi	$s7, $s7, 1		# avvio fase decifratura 
 		
-		# CHIAMA INVERTER PER INVERTIRE LA CHIAVE E METTERLA SU BUFFERKEY
+		# la	$a0,chiave
+		# jal	readKey	
 		
-		# CHIAMA READFILE SU MESSAGGIOCIFRATO E METTERLO SU BUFFERREADER
+		# la 	$a0,messaggioDecifrato
+		# jal	readMessage		
 		
-		#jal 	decrifratura	
+		# jal 	decrifratura
+		
+		# scrivi su file di uscita		
 		
 		j 	exit
-				
-		
+
+
+# MAIN PROCEDURES :VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV					
+									
 	
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+# PROCEDURA GENERICA DEDICATA ALL'INVERSIONE DI QUALCUASI STRINGA SIA DATA IN PASTO 
+# PARAMETRI : $a2 <--- bufferReader , buffer contenente la stringa a invertire 
+#	      $a3 <--- buffer di support alla procedura di inversione
+	
+algD:		add	$sp, $sp, -4
+		sw	$ra, 0($sp)
 		
+		move	$t9, $a2 		# faccio una copia perche mi serve
+		move	$t8, $a3
 		
-		j exit 
-		#leggi chiave
+		move	$t0, $zero			# Inizializzo contatore degli elementi della stringa a 0
+
+		jal	bufferLenght
+	
+
+reversal:					# Metodo di inversione				
+		beq	$t0, $s0, swapVet		# Se il numero dei caratteri inseriti è pari alla lunghezza del buffer
+						# allora posso uscire dalla procedura	
+		lbu	$t1, ($a2)			# Altrimenti metto in $t1 l'elemento del buffer di input
+		sb	$t1, ($a3)			# e lo salvo nel buffer di uscita
 		
+		li	$t5, 1
+		sub	$a2, $a2, $t5			# Vado al carattere precedente del buffer di input
+		addi	$a3, $a3, 1			# Scorro alla posizione successiva del buffer di output
+		addi	$t0, $t0, 1			# Aumento di 1 il contatore dei caratteri inseriti
+	
+		j 	reversal
+	
+swapVet: 
+		move	$a2, $t9
+		move	$a3, $t8
+		jal	overWrite
+	
+		move	$v0, $v1
+	
+		lw	$ra, 0($sp)
+		add	$sp, $sp, 4
+		
+		jr	$ra				# fine algoritmo D
+	
+# procedura dedicata all'algoritmo D
+# conta la lunghezza dell'array
+#
+bufferLenght:	add	$sp, $sp, -4
+		sw	$ra, 0($sp)					# Metodo che conta quanti elementi sono presenti nel buffer
+	
+counterLoop:	lbu	$t1, ($a2)			# Carico il carattere puntato in $t1
+		beqz	$t1, exit_loopCounter			# Se sono arrivato alla fine della stringa il metodo termina
+		addi	$t0, $t0, 1			# Altrimenti aumento il contatore di 1
+		addi	$a2, $a2, 1			# Scorro alla posizione successiva del buffer
+		j 	counterLoop				# Inizio un nuovo ciclo
+
+exit_loopCounter:
+		addi	$a2, $a2, -1			# Dato che il il puntatore e' fuori dal buffer, lo faccio tornare						# indietro di una posizione
+		move	$s0, $t0			# Dato che e' il numero degli elementi rimarra' invariato lo salvo in $s0
+		move	$t0, $zero			# Reinizializzo $t0 per contare il numero di elementi che verranno inseriti
+		
+		lw	$ra, 0($sp)
+		add	$sp, $sp, 4
+		jr 	$ra
+		
+# procedura che sovrascrive il contenuto di qualasiasi vettore 
+#	parametri 	$a3 : vettore che con i dati partenza 	
+# 			$a2 : vettore di arrivo
+
+overWrite:	add	$sp, $sp, -4
+		sw	$ra, 0($sp)
+		
+		move	$t0, $zero
+	
+loop_overWrite:
+		beq	$t0, $s0, exit_loopOW
+		lbu	$t1, ($a3)
+		sb	$t1, ($a2)
+	
+		addi	$a3, $a3, 1
+		addi	$a2, $a2, 1
+		addi	$t0, $t0, 1
+	
+		j	loop_overWrite
+
+exit_loopOW:	move	$v1, $a2				# Restituisco in $v0 il buffer di output
+
+		lw	$ra, 0($sp)
+		add	$sp, $sp, 4
+		jr 	$ra
+
 
 # readMessage : procedura dedicata a leggere il file che deve essere CIFRATO o DECIFRATO
 # parametri : 		$a0 : descritttore del file da leggere (l'etticheta che conitiene il percorso) 
@@ -107,8 +193,14 @@ readKey:	addi 	$sp, $sp, -4
 		la	$a1, bufferKey		# buffer che conterra la chiave corrente 
 		li	$a2, 5			# dimensione del buffer
 		jal	readFile		# leggo il file e carico il buffer dedicato
-			
-		lw	$ra, 0($sp)		# reimposto il registro del chiamante
+		
+		beqz	$s7, readKey_Exit	# per la decifratura
+		la	$a2, bufferKey		# Metto il buffer di input in $a2
+		la	$a3, supportInvert	# Carico il buffer che conterrà il messaggio da restituire in $a3
+		jal 	algD
+	 
+						
+readKey_Exit:	lw	$ra, 0($sp)		# reimposto il registro del chiamante
 		addi	$sp, $sp, 4
 		jr $ra	
 
