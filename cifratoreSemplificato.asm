@@ -157,6 +157,23 @@ algorithm_A:
 		
 		j	goNext
 algorithm_D:
+		addi 	$sp, $sp, -16	
+		sw 	$s6, 0($sp)
+		sw 	$s5, 4($sp)
+		sw 	$s4, 8($sp)
+		sw	$t0, 12($sp)
+		sw	$ra, 16($sp)
+		
+		la 	$a2, bufferReader
+		la	$a3, supportBuffer
+		jal	algD
+		
+		lw	$ra, 16($sp)
+		lw	$t0, 12($sp)
+		lw	$s4, 8($sp)
+		lw	$s5, 4($sp)
+		lw	$s6, 0($sp)
+		addi	$sp, $sp, 16
 
 		j	goNext
 		
